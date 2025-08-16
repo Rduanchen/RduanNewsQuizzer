@@ -33,12 +33,13 @@
         :model-value="progress"
         color="primary"
         height="4"
-        class="mx-4 mb-4"
+        class="mx-4 mb-4 mr-1"
       ></v-progress-linear>
     </v-card>
 
     <!-- 題目列表 -->
-    <div v-if="!showResults">
+
+    <div v-if="!showResults" class="question-list">
       <QuestionCard
         v-for="(question, index) in questions"
         :key="index"
@@ -74,6 +75,7 @@
       :score="score"
       :totalTime="finalTime"
       :settings="quizSettings"
+      class="question-list"
       @retry="retryQuiz"
       @new-quiz="$emit('new-quiz')"
     />
@@ -203,3 +205,10 @@ const formatTime = (seconds) => {
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 };
 </script>
+
+<style scoped>
+.question-list {
+  overflow: scroll;
+  max-height: 70vh;
+}
+</style>

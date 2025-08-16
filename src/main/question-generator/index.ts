@@ -2,6 +2,68 @@ import { ipcMain } from 'electron';
 import { crawler, getNewsContent } from '../news-sources/bbc_clawer/';
 import { openAIService, GenerateQuestionsOptions } from '../question-generator/openai';
 
+// for testing
+const Mock = {
+  success: true,
+  data: {
+    questions: [
+      {
+        question:
+          'What was the general expectation for the Alaska summit between Trump and Putin according to the article?',
+        options: [
+          'A complete end to the Ukraine war',
+          'A vital step toward peace in Ukraine with a concrete ceasefire',
+          'A mutual alliance against Western nations',
+          'A focus on domestic US policy only'
+        ],
+        answer: 1
+      },
+      {
+        question:
+          "Which of the following statements best describes Putin's reception in US media and politics before the summit?",
+        options: [
+          'He was widely celebrated as a democratic partner in the West',
+          'He had been a pariah in the eyes of the West due to Ukraine invasion',
+          'He had never traveled outside Russia before',
+          'He was invited solely as a guest with no political implications'
+        ],
+        answer: 1
+      },
+      {
+        question: 'What notable moment occurred as Putin left the Alaska airbase?',
+        options: [
+          'He drove his own Moscow-plated presidential state car',
+          "He accepted a lift in Trump's armoured limousine",
+          'He walked back to Russia on foot',
+          'He refused a ride and took a commercial flight'
+        ],
+        answer: 1
+      },
+      {
+        question:
+          'According to the article, what did Putin emphasize about the Ukraine situation during his remarks?',
+        options: [
+          'An immediate ceasefire with no conditions',
+          'That an unspecified agreement had been reached and the root causes must be eliminated',
+          'That Ukraine must immediately surrender territory',
+          'That Russia would withdraw all forces from border areas'
+        ],
+        answer: 1
+      },
+      {
+        question: 'What did Trump say about the outcome of the meeting and its details?',
+        options: [
+          'He announced a concrete ceasefire and a trilateral meeting with Zelensky',
+          'He claimed there were many points of agreement but provided few details',
+          'He declared full withdrawal of Russian forces from Ukraine',
+          'He stated that the US would impose severe consequences immediately'
+        ],
+        answer: 1
+      }
+    ]
+  }
+};
+
 class QuestionsManager {
   public setup() {
     // 獲取新聞內容
@@ -22,8 +84,10 @@ class QuestionsManager {
     // 生成問題
     ipcMain.handle('questions:generate', async (_event, options: GenerateQuestionsOptions) => {
       try {
+        console.log('Generating questions with options:', options);
         const questions = await openAIService.generateQuestions(options);
         return { success: true, data: questions };
+        // return Mock;
       } catch (error) {
         console.error('Failed to generate questions:', error);
         return {

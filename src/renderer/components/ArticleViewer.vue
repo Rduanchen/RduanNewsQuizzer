@@ -107,7 +107,7 @@ const loadContent = async () => {
 
   try {
     const response = await window.api.questions.getNewsContent(props.newsLink);
-
+    console.log('News content loaded:', response);
     if (response.success) {
       newsContent.value = response.data;
       emit('content-loaded', response.data);
@@ -184,7 +184,7 @@ const formatContent = (content) => {
 .article-content {
   font-size: 16px;
   line-height: 1.8;
-  color: #333;
+  color: #ccc;
   text-align: justify;
 }
 

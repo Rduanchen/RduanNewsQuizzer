@@ -12,12 +12,12 @@ function setupAllIPC() {
   ipcMain.handle('test', () => {
     return 'Test response';
   });
-  ipcMain.handle('open-external-url', async (_event, url: string) => {
-    try {
-      await shell.openExternal(url);
-    } catch (error) {
-      console.error('Failed to open external URL:', error);
-    }
-  });
+  // ipcMain.handle('open-external-url', async (_event, url: string) => {
+  //   try {
+  //     await shell.openExternal(url);
+  //   } catch (error) {
+  //     console.error('Failed to open external URL:', error);
+  //   }
+  // });
 }
 export default setupAllIPC;

@@ -160,6 +160,8 @@ class OpenAIService {
 
   private initializeOpenAI(): void {
     const apiKey = storeManager.getApiKey();
+    // const apiKey =
+    console.log('Initializing OpenAI with API Key:', apiKey);
     if (!apiKey) {
       throw new Error('請先設定 OpenAI API Key');
     }
@@ -174,7 +176,8 @@ class OpenAIService {
       - Your reply must be in JSON format ONLY.
       - All questions must be multiple-choice.
       - Please generate exactly ${amount} questions.
-      - All questions and answers must be in Traditional Chinese (繁體中文).
+      - All questions and answers must be in English.
+      - The answer index must be random but within the range of available options and correspond to the correct answer.
     `;
 
     switch (opts.style ?? ExamStyle.All) {
@@ -186,14 +189,13 @@ class OpenAIService {
         break;
       case ExamStyle.All:
       default:
-        base +=
-          '\n- Pretend you can write both TOEFL and IELTS style questions; choose whichever style fits the article best.';
+        base += '\n- Pretend you can write both TOEFL and IELTS style questions;';
         break;
     }
 
     base +=
       '\n- Ensure the JSON strictly follows this format: {"questions": [{"question": "string", "options": ["string"], "answer": number}]}';
-    base += `\n- The JSON must strictly follow the schema provided via response_format: ${QUESTIONS_JSON_SCHEMA}`;
+    base += `\n- The "question" property in the JSON must strictly follow the schema provided via response_format: ${QUESTIONS_JSON_SCHEMA}`;
     base += '\n\nArticle:\n';
     base += opts.article.trim();
 
@@ -271,24 +273,30 @@ class OpenAIService {
     const prompt = this.buildPrompt(opts);
 
     try {
-      const response = await this.openai.chat.completions.create({
+      // const response = await this.openai.chat.completions.create({
+      //   model: opts.model ?? this.DEFAULT_MODEL,
+      //   messages: [
+      //     {
+      //       role: 'system',
+      //       content:
+      //         'You are a helpful assistant that generates multiple-choice reading comprehension questions in Traditional Chinese.'
+      //     },
+      //     {
+      //       role: 'user',
+      //       content: prompt
+      //     }
+      //   ],
+      //   temperature: 0.7,
+      //   response_format: { type: 'json_object' }
+      // });
+      const response = await this.openai.responses.create({
         model: opts.model ?? this.DEFAULT_MODEL,
-        messages: [
-          {
-            role: 'system',
-            content:
-              'You are a helpful assistant that generates multiple-choice reading comprehension questions in Traditional Chinese.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-        response_format: { type: 'json_object' }
+        reasoning: { effort: opts.reasoningEffort ?? 'low' },
+        input: prompt
       });
 
-      const content = response.choices[0]?.message?.content;
+      const content = response.output_text;
+      console.log(content);
       if (!content) {
         throw new Error('OpenAI 回應為空');
       }

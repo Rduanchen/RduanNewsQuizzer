@@ -16,6 +16,11 @@ interface NewsAPI {
   selectSource: (sourceIndex: number) => Promise<ApiResponse>;
   getHeadlines: () => Promise<ApiResponse<NewsItem[]>>;
   openExternalUrl: (url: string) => Promise<void>;
+  getNewsContentBySource: (
+    sourceIndex: number,
+    newsUrl: string
+  ) => Promise<ApiResponse<NewsContent>>;
+  getCustomArticleContent: (customArticle: string) => Promise<ApiResponse<NewsContent>>;
 }
 
 interface SettingsAPI {
@@ -27,11 +32,11 @@ interface SettingsAPI {
   setUserPreferences: (preferences: any) => Promise<ApiResponse>;
 }
 
-interface QuestionsAPI {
-  getNewsContent: (newsUrl: string) => Promise<ApiResponse>;
-  generate: (options: any) => Promise<ApiResponse>;
-  testConnection: () => Promise<ApiResponse>;
-}
+// interface QuestionsAPI {
+//   getNewsContent: (newsUrl: string) => Promise<ApiResponse>;
+//   generate: (options: any) => Promise<ApiResponse>;
+//   testConnection: () => Promise<ApiResponse>;
+// }
 
 interface TestAPI {
   test: () => Promise<any>;

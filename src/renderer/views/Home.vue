@@ -21,6 +21,74 @@
       </v-col>
     </v-row>
 
+    <!-- 新增功能區塊 -->
+    <v-row class="mb-4">
+      <!-- 貼上新聞連結 -->
+      <v-col cols="12" md="6">
+        <v-text-field
+          v-model="newsUrl"
+          label="貼上新聞連結"
+          variant="outlined"
+          prepend-inner-icon="mdi-link"
+          placeholder="請貼上要分析的新聞連結"
+          @keyup.enter="handlePasteNewsUrl"
+          :loading="pastingNews"
+        ></v-text-field>
+        <v-btn
+          color="primary"
+          class="mt-2"
+          :loading="pastingNews"
+          :disabled="!newsUrl"
+          @click="handlePasteNewsUrl"
+        >
+          <v-icon left>mdi-arrow-right</v-icon>
+          送出連結
+        </v-btn>
+        <v-alert
+          v-if="pasteError"
+          type="error"
+          variant="tonal"
+          class="mt-2"
+          closable
+          @click:close="pasteError = ''"
+        >
+          {{ pasteError }}
+        </v-alert>
+      </v-col>
+      <!-- 自訂文章 -->
+      <!-- <v-col cols="12" md="6">
+        <v-textarea
+          v-model="customArticle"
+          label="自訂文章內容"
+          prepend-inner-icon="mdi-file-document-edit"
+          variant="outlined"
+          placeholder="請貼上或輸入你想分析的文章"
+          rows="5"
+          auto-grow
+        ></v-textarea>
+        <v-btn
+          color="success"
+          class="mt-2"
+          :loading="customLoading"
+          :disabled="!customArticle"
+          @click="handleCustomArticle"
+        >
+          <v-icon left>mdi-arrow-right</v-icon>
+          送出文章
+        </v-btn>
+        <v-alert
+          v-if="customError"
+          type="error"
+          variant="tonal"
+          class="mt-2"
+          closable
+          @click:close="customError = ''"
+        >
+          {{ customError }}
+        </v-alert>
+      </v-col> -->
+    </v-row>
+
     <!-- 載入狀態 -->
     <v-row v-if="loading && headlines.length === 0" class="justify-center">
       <v-col cols="12" class="text-center">
@@ -34,6 +102,7 @@
       <v-col cols="12">
         <v-alert type="error" variant="tonal" closable @click:close="error = null">
           載入新聞時發生錯誤：{{ error }}
+          請檢查您的網絡連接或稍後再試。
         </v-alert>
       </v-col>
     </v-row>
@@ -104,7 +173,6 @@
 </template>
 <script setup>
 import { ref, onMounted } from 'vue';
-import SettingsDialog from '../components/SettingsDialog.vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -120,14 +188,24 @@ const headlines = ref([]);
 const selectedNews = ref(null);
 const hasApiKey = ref(false);
 
+// 新增：貼上新聞連結
+const newsUrl = ref('');
+const pastingNews = ref(false);
+const pasteError = ref('');
+
+// 新增：自訂文章
+const customArticle = ref('');
+const customLoading = ref(false);
+const customError = ref('');
+
 // 生命周期
 onMounted(async () => {
   await loadNewsSources();
   await loadHeadlines();
   await checkApiKey();
-  console.log(await window.api.test.test());
 });
 
+// 檢查 API Key
 const checkApiKey = async () => {
   try {
     const apiKey = await window.api.settings.getApiKey();
@@ -138,30 +216,16 @@ const checkApiKey = async () => {
   }
 };
 
-// 設定更新回調
-const onSettingsUpdated = (settings) => {
-  hasApiKey.value = !!settings.apiKey;
-};
-
-// 題目生成完成回調
-const onQuestionsGenerated = (questions) => {
-  console.log('Questions generated:', questions);
-  // 可以在這裡處理生成的題目，例如儲存或顯示通知
-};
-
 // 載入新聞來源
 const loadNewsSources = async () => {
   try {
     const sources = await window.api.news.getSources();
     newsSources.value = sources;
-
-    // 將字串陣列轉換為物件陣列，用於 v-select
     newsSourceOptions.value = sources.map((source, index) => ({
       title: source,
       value: index
     }));
   } catch (err) {
-    console.error('Failed to load news sources:', err);
     error.value = '無法載入新聞來源';
   }
 };
@@ -175,7 +239,6 @@ const loadHeadlines = async () => {
     headlines.value = newsData.data || [];
     selectedNews.value = null;
   } catch (err) {
-    console.error('Failed to load headlines:', err);
     error.value = '無法載入新聞標題';
     headlines.value = [];
   } finally {
@@ -189,7 +252,6 @@ const onSourceChange = async (sourceIndex) => {
     await window.api.news.selectSource(sourceIndex);
     await loadHeadlines();
   } catch (err) {
-    console.error('Failed to change news source:', err);
     error.value = '切換新聞來源失敗';
   }
 };
@@ -203,25 +265,20 @@ const refreshNews = async () => {
 const selectNews = (news) => {
   selectedNews.value = selectedNews.value === news ? null : news;
   if (selectedNews.value) {
-    toGenerateQuestions();
+    toGenerateQuestions(selectedNews.value);
   }
 };
 
-// 跳轉到題目生成頁面 - 修改這個函數
-const toGenerateQuestions = () => {
-  console.log('Generating questions for:', selectedNews.value);
-  if (selectedNews.value) {
+// 跳轉到題目生成頁面
+const toGenerateQuestions = (news) => {
+  if (news) {
     try {
-      // 將新聞資料編碼後放入 URL 參數
-      const encodedNewsData = encodeURIComponent(JSON.stringify(selectedNews.value));
+      const encodedNewsData = encodeURIComponent(JSON.stringify(news));
       router.push({
         name: 'QuizPage',
-        params: {
-          newsData: encodedNewsData
-        }
+        params: { newsData: encodedNewsData }
       });
     } catch (error) {
-      console.error('Failed to encode news data:', error);
       alert('跳轉失敗，請重試');
     }
   }
@@ -230,5 +287,64 @@ const toGenerateQuestions = () => {
 // 開啟新聞連結
 const openNewsLink = (url) => {
   window.api.news.openExternalUrl(url);
+};
+
+// 新增：貼上新聞連結功能
+const handlePasteNewsUrl = async () => {
+  if (!newsUrl.value) return;
+  pastingNews.value = true;
+  pasteError.value = '';
+  try {
+    // 使用者選擇的新聞來源
+    const sourceIndex = selectedSourceIndex.value;
+
+    // 這裡根據 sourceIndex 或 newsSources.value[sourceIndex] 決定用哪個爬蟲
+    // 例如 window.api.news.getCustomNewsContent(sourceIndex, newsUrl)
+    // 假設 window.api.news.getNewsContentBySource 會根據來源和連結爬取
+    const result = await window.api.news.getNewsContentBySource(sourceIndex, newsUrl.value);
+    if (result && result.success && result.data) {
+      // 直接跳轉到 QuizPage 並傳遞資料
+      toGenerateQuestions({
+        coverUrl: null,
+        title: result.data.title,
+        description: result.data.description || '',
+        newsLink: newsUrl.value,
+        content: result.data.content,
+        author: result.data.author || '',
+        date: result.data.date || '',
+        custom: true // 標記為自訂連結
+      });
+    } else {
+      pasteError.value = result.error || '無法解析新聞連結';
+    }
+  } catch (err) {
+    pasteError.value = err.message || '連結爬取失敗，請確認連結或來源是否正確';
+  } finally {
+    pastingNews.value = false;
+  }
+};
+
+// 新增：自訂文章功能
+const handleCustomArticle = async () => {
+  if (!customArticle.value) return;
+  customLoading.value = true;
+  customError.value = '';
+  try {
+    // 直接傳遞文章內容到 QuizPage
+    toGenerateQuestions({
+      coverUrl: null,
+      title: '自訂文章',
+      description: customArticle.value.substring(0, 50) + '...',
+      newsLink: '',
+      content: customArticle.value,
+      author: '',
+      date: '',
+      custom: true // 標記為自訂文章
+    });
+  } catch (err) {
+    customError.value = err.message || '文章送出失敗';
+  } finally {
+    customLoading.value = false;
+  }
 };
 </script>
