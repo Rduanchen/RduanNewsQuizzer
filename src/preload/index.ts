@@ -14,7 +14,7 @@ const testAPI = {
 // Custom APIs for renderer
 const api = {
   settings: settingsAPI,
-  questions: questionsAPI, // 修正命名一致性
+  questions: questionsAPI,
   news: newsAPI,
   test: testAPI
 };
@@ -28,13 +28,6 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('electron', electronAPI);
     contextBridge.exposeInMainWorld('api', api);
     console.log('API exposed:', api);
-
-    // 移除重複的 test API，因為已經在 api 中包含了
-    // contextBridge.exposeInMainWorld('test', {
-    //   test: async () => {
-    //     return await ipcRenderer.invoke('test');
-    //   }
-    // });
   } catch (error) {
     console.error('Failed to expose APIs to main world:', error);
   }
