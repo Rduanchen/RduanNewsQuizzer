@@ -33,7 +33,7 @@
         :model-value="progress"
         color="primary"
         height="4"
-        class="mx-4 mb-4 mr-1"
+        class="mx-4 mb-4 mr-1 9"
       ></v-progress-linear>
     </v-card>
 
