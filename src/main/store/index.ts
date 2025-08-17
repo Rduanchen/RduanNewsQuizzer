@@ -20,7 +20,13 @@ class SettingsManager {
         return { success: true }; // 回傳簡單物件
       } catch (error) {
         console.error('Set API key error:', error);
-        return { success: false, error: error.message };
+        return {
+          success: false,
+          error:
+            typeof error === 'object' && error !== null && 'message' in error
+              ? (error as any).message
+              : String(error)
+        };
       }
     });
 
@@ -48,13 +54,19 @@ class SettingsManager {
           style: Number(settings.style) || 0,
           model: String(settings.model) || 'gpt-5-mini',
           reasoningEffort: String(settings.reasoningEffort) || 'low'
-        };
+        } as QuestionSettings;
 
         storeManager.setQuestionSettings(cleanSettings);
         return { success: true };
       } catch (error) {
         console.error('Set question settings error:', error);
-        return { success: false, error: error.message };
+        return {
+          success: false,
+          error:
+            typeof error === 'object' && error !== null && 'message' in error
+              ? (error as any).message
+              : String(error)
+        };
       }
     });
   }
