@@ -1,5 +1,5 @@
 import { app, shell, BrowserWindow } from 'electron';
-// import { join } from 'path'
+import { join } from 'path';
 import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import icon from '../../resources/icon.png?asset';
 import setupAllIPC from './ipcHandler';
@@ -14,14 +14,19 @@ function createWindow(): void {
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-      preload: fileURLToPath(new URL('../preload/index.mjs', import.meta.url)),
+      preload: join(__dirname, '../preload/index.mjs'),
       sandbox: false,
-      contextIsolation: true
+      contextIsolation: true,
+      nodeIntegration: false
     }
   });
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show();
+    // 在開發模式下打開開發者工具
+    if (is.dev) {
+      mainWindow.webContents.openDevTools();
+    }
   });
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -29,10 +34,20 @@ function createWindow(): void {
     return { action: 'deny' };
   });
 
+  // 添加錯誤處理
+  mainWindow.webContents.on('did-fail-load', (_, errorCode, errorDescription, validatedURL) => {
+    console.error('Failed to load:', errorCode, errorDescription, validatedURL);
+  });
+
+  mainWindow.webContents.on('render-process-gone', () => {
+    console.error('Renderer process gone');
+  });
+
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL']);
   } else {
-    mainWindow.loadFile(new URL('../renderer/index.html', import.meta.url).pathname);
+    const __dirname = fileURLToPath(new URL('.', import.meta.url));
+    mainWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
 }
 
