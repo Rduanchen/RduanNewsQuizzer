@@ -2,8 +2,8 @@
   <v-app id="main">
     <v-app-bar>
       <v-app-bar-title @click="router.push('/')" style="cursor: pointer"
-        >Rduan AI Reading Comprehension Generator</v-app-bar-title
-      >
+        >Rduan AI NewsQuizzer
+      </v-app-bar-title>
       <!-- <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon> -->
       <SettingsDialog @settings-updated="onSettingsUpdated" />
     </v-app-bar>

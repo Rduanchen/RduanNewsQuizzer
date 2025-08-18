@@ -1,6 +1,5 @@
 import * as cheerio from 'cheerio';
 import { NewsContent, NewsTitles } from './modelType';
-import { BBC_ROOT_URL } from './clawer';
 
 async function getNewsTitle(body: string): Promise<NewsTitles[]> {
   const $ = cheerio.load(body, { xmlMode: true }); // XML 模式

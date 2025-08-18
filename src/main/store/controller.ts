@@ -8,10 +8,16 @@ export interface QuestionSettings {
 }
 
 class StoreManager {
-  private store: Store;
+  private store: Store & {
+    get: (key: string, defaultValue?: any) => any;
+    set: (key: string, value: any) => void;
+  };
 
   constructor() {
-    this.store = new Store();
+    this.store = new Store() as Store & {
+      get: (key: string, defaultValue?: any) => any;
+      set: (key: string, value: any) => void;
+    };
   }
 
   // API Key 管理
