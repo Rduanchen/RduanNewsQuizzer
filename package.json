@@ -1,10 +1,9 @@
 {
-  "name": "electron-app-vite",
+  "name": "news-quizzer",
   "version": "1.0.0",
-  "description": "An Electron application with Vue and TypeScript",
+  "description": "An application use generate reading comprehension questions",
   "main": "./out/main/index.js",
-  "author": "example.com",
-  "homepage": "https://electron-vite.org",
+  "author": "Justin",
   "type": "module",
   "scripts": {
     "format": "prettier --write .",
@@ -54,7 +53,7 @@
     "@vue/eslint-config-typescript": "^13.0.0",
     "concurrently": "^9.1.2",
     "electron": "^31.0.2",
-    "electron-builder": "^24.13.3",
+    "electron-builder": "^26.0.12",
     "electron-rebuild": "^3.2.9",
     "electron-reloader": "^1.2.3",
     "electron-vite": "^4.0.0",
