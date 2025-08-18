@@ -1,5 +1,5 @@
 // import NewsSources from './news-sources';
-import { ipcMain, shell } from 'electron';
+import { ipcMain } from 'electron';
 import { newsSourceManager } from './news-sources';
 
 import { settingsManager } from './store';
