@@ -9,7 +9,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "nodenext",
+    "moduleResolution": "node",
     "composite": true,
     "baseUrl": ".",
     "paths": {
