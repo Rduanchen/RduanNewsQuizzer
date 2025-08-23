@@ -17,6 +17,7 @@
     <v-row v-else style="height: calc(100vh - 100px)">
       <!-- 左欄：文章內容 -->
       <v-col cols="12" md="6" style="height: 100%">
+        {{ selectedNews }}
         <ArticleViewer
           :newsLink="selectedNews.newsLink"
           :coverUrl="selectedNews.coverUrl"

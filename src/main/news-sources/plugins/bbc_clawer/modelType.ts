@@ -8,7 +8,7 @@ interface NewsContent {
 interface NewsTitles {
   coverUrl: string | null;
   title: string;
-  description: string;
+  description: string;  
   newsLink: string;
 }
 

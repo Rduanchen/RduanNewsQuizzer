@@ -1,25 +1,42 @@
 import { ipcMain, shell } from 'electron';
-import { getBBCNewsTitles, getBBCNewsContent } from './bbc_clawer/';
+// import { getBBCNewsTitles, getBBCNewsContent } from './plugins/bbc_clawer';
+import BBC from './plugins/bbc_clawer';
+import SelfDefine from './plugins/self-define';
+import SourcePlugins from './pluginsPrototype';
 
 // 新聞內容格式
-export interface NewsContent {
-  coverUrl: string | null;
-  title: string;
-  description: string;
-  newsLink: string;
-  content: string;
-  author?: string;
-  date?: string;
+// export interface NewsContent {
+//   coverUrl: string | null;
+//   title: string;
+//   description: string;
+//   newsLink: string;
+//   content: string;
+//   author?: string;
+//   date?: string;
+// }
+
+interface NewsSource {
+  name: string;
+  index: number;
 }
 
 class NewsSourceManager {
-  private NEWS_SOURCES = ['BBC NEWS'];
+  private NEWS_SOURCES: NewsSource[] = [];
   private selectedSource = 0;
+  private plugins: SourcePlugins[] = [];
 
-  public setup() {
+  public async setup() {
+    await this.getPlugins().then((plugins) => {
+      this.plugins = plugins;
+      this.NEWS_SOURCES = this.getPluginSourceNames();
+    });
     // 取得新聞來源列表
     ipcMain.handle('news-sources:get', () => {
-      return this.NEWS_SOURCES;
+      let names: string[] = [];
+      this.NEWS_SOURCES.forEach((source) => {
+        names.push(source.name);
+      });
+      return names;
     });
 
     // 選擇新聞來源
@@ -34,13 +51,12 @@ class NewsSourceManager {
     // 取得新聞標題清單
     ipcMain.handle('news-sources:getHeadlines', async () => {
       try {
-        switch (this.selectedSource) {
-          case 0:
-            const headlines = await getBBCNewsTitles();
-            return { success: true, data: headlines };
-          default:
-            return { success: true, data: [] };
+        const source = this.plugins[this.selectedSource];
+        if (!source) {
+          return { success: false, error: '無效的新聞來源' };
         }
+        const titles = await source.getNewsTitles();
+        return { success: true, data: titles };
       } catch (error) {
         console.error('Failed to get headlines:', error);
         return {
@@ -59,14 +75,13 @@ class NewsSourceManager {
             return { success: false, error: '無效的新聞連結' };
           }
 
-          switch (sourceIndex) {
-            case 0: // BBC
-              const newsContent = await getBBCNewsContent(newsUrl); // 你需要根據連結爬 BBC 內容
-              // 預期 getBBCNewsContent 回傳 NewsContent 格式
-              return { success: true, data: newsContent };
-            default:
-              return { success: false, error: '目前僅支援 BBC' };
+          const source = this.plugins[sourceIndex];
+          if (!source) {
+            return { success: false, error: '無效的新聞來源' };
           }
+
+          const content = await source.getNewsContent(newsUrl);
+          return { success: true, data: content };
         } catch (error) {
           return {
             success: false,
@@ -77,28 +92,28 @@ class NewsSourceManager {
     );
 
     // 新增：允許自訂文章（可以直接 return，或記錄到 localStorage/db 以利分析）
-    ipcMain.handle('news-sources:getCustomArticleContent', (_event, customArticle: string) => {
-      if (
-        !customArticle ||
-        typeof customArticle !== 'string' ||
-        customArticle.trim().length === 0
-      ) {
-        return { success: false, error: '文章內容不可為空' };
-      }
-      // 前端直接傳遞自訂內容即可
-      return {
-        success: true,
-        data: {
-          coverUrl: null,
-          title: '自訂文章',
-          description: customArticle.substring(0, 50) + '...',
-          newsLink: '',
-          content: customArticle,
-          author: '',
-          date: ''
-        }
-      };
-    });
+    // ipcMain.handle('news-sources:getCustomArticleContent', (_event, customArticle: string) => {
+    //   if (
+    //     !customArticle ||
+    //     typeof customArticle !== 'string' ||
+    //     customArticle.trim().length === 0
+    //   ) {
+    //     return { success: false, error: '文章內容不可為空' };
+    //   }
+    //   // 前端直接傳遞自訂內容即可
+    //   return {
+    //     success: true,
+    //     data: {
+    //       coverUrl: null,
+    //       title: '自訂文章',
+    //       description: customArticle.substring(0, 50) + '...',
+    //       newsLink: '',
+    //       content: customArticle,
+    //       author: '',
+    //       date: ''
+    //     }
+    //   };
+    // });
 
     // 打開外部網址
     ipcMain.handle('open-external-url', (_event, url: string) => {
@@ -109,11 +124,20 @@ class NewsSourceManager {
     });
   }
 
-  public getSelectedSource(): number {
-    return this.selectedSource;
+  public async getPlugins(): Promise<SourcePlugins[]> {
+    const pluginClasses = [BBC, SelfDefine];
+    return pluginClasses.map((PluginClass) => new PluginClass());
   }
 
-  public getNewsSources(): string[] {
+  public getPluginSourceNames(): NewsSource[] {
+    let names: NewsSource[] = [];
+    this.plugins.forEach((plugin, index) => {
+      names.push({ name: plugin.getSourceName(), index });
+    });
+    return names;
+  }
+
+  public getNewsSources(): NewsSource[] {
     return [...this.NEWS_SOURCES];
   }
 }

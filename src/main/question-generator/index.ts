@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron';
-import { crawler, getNewsContent } from '../news-sources/bbc_clawer/';
+import { crawler, getNewsContent } from '../news-sources/plugins/bbc_clawer';
 import { openAIService, GenerateQuestionsOptions } from '../question-generator/openai';
 
 class QuestionsManager {

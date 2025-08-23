@@ -20,3 +20,20 @@ export {
   getNewsContent,
   BBC_TITLE_PAGE_URL
 };
+
+import SourcePlugins from '../../pluginsPrototype';
+
+export default class BBCSource extends SourcePlugins {
+  public sourceName = 'BBC';
+
+  getSourceName(): string {
+    return this.sourceName;
+  }
+  async getNewsContent(url: string): Promise<NewsContent> {
+    return getBBCNewsContent(url);
+  }
+  async getNewsTitles(keyword?: string): Promise<NewsTitles[]> {
+    if (keyword) console.log('keyword is not supported in this plugin yet.');
+    return getBBCNewsTitles();
+  }
+}

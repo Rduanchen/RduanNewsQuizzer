@@ -2,7 +2,7 @@
   <v-card height="100%" style="overflow-y: auto">
     <v-card-title class="sticky-header">
       <div class="d-flex align-items-center">
-        <v-chip color="primary" size="small" class="mr-3">BBC News</v-chip>
+        <!-- <v-chip color="primary" size="small" class="mr-3">BBC News</v-chip> -->
         <span class="text-h6">文章內容</span>
       </div>
     </v-card-title>

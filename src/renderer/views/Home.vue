@@ -56,37 +56,7 @@
         </v-alert>
       </v-col>
       <!-- 自訂文章 -->
-      <!-- <v-col cols="12" md="6">
-        <v-textarea
-          v-model="customArticle"
-          label="自訂文章內容"
-          prepend-inner-icon="mdi-file-document-edit"
-          variant="outlined"
-          placeholder="請貼上或輸入你想分析的文章"
-          rows="5"
-          auto-grow
-        ></v-textarea>
-        <v-btn
-          color="success"
-          class="mt-2"
-          :loading="customLoading"
-          :disabled="!customArticle"
-          @click="handleCustomArticle"
-        >
-          <v-icon left>mdi-arrow-right</v-icon>
-          送出文章
-        </v-btn>
-        <v-alert
-          v-if="customError"
-          type="error"
-          variant="tonal"
-          class="mt-2"
-          closable
-          @click:close="customError = ''"
-        >
-          {{ customError }}
-        </v-alert>
-      </v-col> -->
+      <SelfDefineArticle v-if="isSelfDefinedArticle" @articleSubmitted="handleSelfDefineArticleRequest" />
     </v-row>
 
     <!-- 載入狀態 -->
@@ -172,9 +142,11 @@
   </v-container>
 </template>
 <script setup>
-import { ref, onMounted } from 'vue';
+import SelfDefineArticle from '../components/SelfDefineArticle.vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { el } from 'vuetify/locale';
 const { t } = useI18n();
 
 const router = useRouter();
@@ -195,10 +167,6 @@ const newsUrl = ref('');
 const pastingNews = ref(false);
 const pasteError = ref('');
 
-// 新增：自訂文章
-const customArticle = ref('');
-const customLoading = ref(false);
-const customError = ref('');
 
 // 生命周期
 onMounted(async () => {
@@ -326,27 +294,24 @@ const handlePasteNewsUrl = async () => {
   }
 };
 
-// 新增：自訂文章功能
-const handleCustomArticle = async () => {
-  if (!customArticle.value) return;
-  customLoading.value = true;
-  customError.value = '';
+
+const isSelfDefinedArticle = computed(() => {
+  if (newsSources.value[selectedSourceIndex.value] == "SelfDefine") {
+    return true;
+  } else {
+    return false;
+  }
+});
+
+
+const handleSelfDefineArticleRequest = (encodedArticle) => {
   try {
-    // 直接傳遞文章內容到 QuizPage
-    toGenerateQuestions({
-      coverUrl: null,
-      title: '自訂文章',
-      description: customArticle.value.substring(0, 50) + '...',
-      newsLink: '',
-      content: customArticle.value,
-      author: '',
-      date: '',
-      custom: true // 標記為自訂文章
-    });
-  } catch (err) {
-    customError.value = err.message || '文章送出失敗';
-  } finally {
-    customLoading.value = false;
+    toGenerateQuestions(encodedArticle);
+    console.log('自訂文章已提交:', encodedArticle);
+  } catch (error) {
+    console.error('解析自訂文章失敗:', error);
+    alert('自訂文章格式錯誤，請檢查後重試');
   }
 };
+
 </script>
