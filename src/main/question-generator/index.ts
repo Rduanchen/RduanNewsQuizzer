@@ -1,118 +1,73 @@
 import { ipcMain } from 'electron';
-import { crawler, getNewsContent } from '../news-sources/plugins/bbc_clawer';
-import { openAIService, GenerateQuestionsOptions } from '../question-generator/openai';
+import { QuestionSettingsManager } from './settings/questionSettings';
+import { GenerateSettings } from './settings/settingsModel';
+import { LMStudioSettings } from './settings/lmStudioSettings';
+import { LmStudioGenerator } from './lmStudioGenerator';
+import { LmStudioSettings } from './settings/lmStudioSettings';
+import { OpenAISettingsManager, OpenAISettings } from './settings/openAISettings';
+import { OpenAIService } from './openaiService';
 
-class QuestionsManager {
+export default class QuestionsManager {
   public setup() {
-    // 獲取新聞內容
-    ipcMain.handle('questions:get-news-content', async (_event, newsUrl: string) => {
-      try {
-        const body = await crawler(newsUrl);
-        const content = await getNewsContent(body);
-        return { success: true, data: content };
-      } catch (error) {
-        console.error('Failed to get news content:', error);
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : '無法獲取新聞內容'
-        };
-      }
+    // Question settings
+    ipcMain.handle('settings:get-questions-settings', async () => {
+      return QuestionSettingsManager.getQuestionOptions();
     });
 
-    // 生成問題
-    ipcMain.handle('questions:generate', async (_event, options: GenerateQuestionsOptions) => {
-      try {
-        console.log('Generating questions with options:', options);
-        const questions = await openAIService.generateQuestions(options);
-        return { success: true, data: questions };
-        // return Mock;
-      } catch (error) {
-        console.error('Failed to generate questions:', error);
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : '生成問題時發生未知錯誤'
-        };
+    ipcMain.handle(
+      'settings:update-questions-settings',
+      async (_event, newSettings: GenerateSettings) => {
+        return QuestionSettingsManager.setQuestionSettings(newSettings);
       }
+    );
+
+    ipcMain.handle('settings:get-current-questions-settings', async () => {
+      return QuestionSettingsManager.getCurrentQuestionSettings();
     });
 
-    // 測試 OpenAI 連接
-    ipcMain.handle('questions:test-openai-connection', async () => {
-      try {
-        const isConnected = await openAIService.testConnection();
-        return { success: true, data: { connected: isConnected } };
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : '測試連接失敗'
-        };
-      }
+    // LM Studio Settings
+    ipcMain.handle('settings:get-lm-studio-settings', async () => {
+      return LmStudioSettings.getCurrentSettings();
     });
 
-    // 獲取可用的模型列表
-    ipcMain.handle('questions:get-available-models', () => {
-      try {
-        const models = openAIService.getAvailableModels();
-        return { success: true, data: models };
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : '獲取模型列表失敗'
-        };
+    ipcMain.handle(
+      'settings:update-lm-studio-settings',
+      async (_event, newSettings: LMStudioSettings) => {
+        let result = await LmStudioGenerator.verifyModelName(newSettings.model);
+        if (result.data == true) {
+          return await LmStudioSettings.saveSettings(newSettings);
+        } else {
+          return result; // StatusCode.InternalError
+        }
       }
+    );
+
+    ipcMain.handle('settings:verify-lm-studio-liveness', async () => {
+      return LmStudioGenerator.isServiceAvailable();
     });
 
-    // 獲取考試風格選項
-    ipcMain.handle('questions:get-exam-styles', () => {
-      try {
-        const styles = openAIService.getExamStyles();
-        return { success: true, data: styles };
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : '獲取考試風格失敗'
-        };
-      }
+    // OpenAI Settings
+    ipcMain.handle('settings:get-openai-settings', async () => {
+      return OpenAISettingsManager.getCurrentOpenAISettings();
     });
 
-    // 獲取推理強度選項
-    ipcMain.handle('questions:get-reasoning-options', () => {
-      try {
-        const options = openAIService.getReasoningOptions();
-        return { success: true, data: options };
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : '獲取推理強度選項失敗'
-        };
+    ipcMain.handle(
+      'settings:update-openai-settings',
+      async (_event, newSettings: OpenAISettings) => {
+        // Verify OpenAI key before saving (endpoint property removed)
+        const verifyResult = await OpenAIService.prototype.init(newSettings.apiKey);
+        if (verifyResult.statusCode === 200) {
+          // Save settings if verification succeeds
+          return OpenAISettingsManager.setOpenAISettings(newSettings);
+        } else {
+          // Return verification error
+          return verifyResult;
+        }
       }
-    });
+    );
 
-    // 根據分類獲取模型
-    ipcMain.handle('questions:get-models-by-category', (_event, category: 'GPT-5' | 'GPT-4.1') => {
-      try {
-        const models = openAIService.getModelsByCategory(category);
-        return { success: true, data: models };
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : '獲取分類模型失敗'
-        };
-      }
-    });
-
-    // 驗證模型是否支援
-    ipcMain.handle('questions:validate-model', (_event, modelId: string) => {
-      try {
-        const isSupported = openAIService.isModelSupported(modelId);
-        return { success: true, data: { supported: isSupported } };
-      } catch (error) {
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : '驗證模型失敗'
-        };
-      }
+    ipcMain.handle('settings:get-openai-options', async () => {
+      return OpenAISettingsManager.getOpenAIOptions();
     });
   }
 }
-
-export const questionsManager = new QuestionsManager();
