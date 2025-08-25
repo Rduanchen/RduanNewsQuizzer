@@ -160,12 +160,9 @@ class OpenAIService {
 
   private initializeOpenAI(): void {
     const apiKey = storeManager.getApiKey();
-    // const apiKey =
-    console.log('Initializing OpenAI with API Key:', apiKey);
     if (!apiKey) {
       throw new Error('請先設定 OpenAI API Key');
     }
-
     this.openai = new OpenAI({ apiKey });
   }
 
