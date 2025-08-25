@@ -29,18 +29,13 @@ class StoreManager {
     this.store.set('openai-api-key', apiKey);
   }
 
-  // 問題生成設定管理
-  public getQuestionSettings(): QuestionSettings {
-    return this.store.get('question-settings', {
-      amount: 5,
-      style: 0,
-      model: 'gpt-4o-mini',
-      reasoningEffort: 'low'
-    }) as QuestionSettings;
+  // API Endpoint 管理
+  public getApiEndpoint(): string {
+    const endpoint = this.store.get('openai-api-endpoint', '');
+    return endpoint as string;
   }
-
-  public setQuestionSettings(settings: QuestionSettings): void {
-    this.store.set('question-settings', settings);
+  public setApiEndpoint(endpoint: string): void {
+    this.store.set('openai-api-endpoint', endpoint);
   }
 
   // 其他設定可以繼續添加...
@@ -50,6 +45,28 @@ class StoreManager {
 
   public setUserPreferences(preferences: any): void {
     this.store.set('user-preferences', preferences);
+  }
+
+  public getQuestionSettings(): string {
+    return this.store.get('question-generation-settings', '');
+  }
+  public setQuestionSettings(settings: string): void {
+    this.store.set('question-generation-settings', settings);
+  }
+
+  // OpenAI Settings management
+  public getOpenAISettings(): string {
+    return this.store.get('openai-settings', '');
+  }
+  public setOpenAISettings(settings: string): void {
+    this.store.set('openai-settings', settings);
+  }
+
+  public getLMStudioSettings(): string {
+    return this.store.get('lmstudio-settings', '');
+  }
+  public setLMStudioSettings(settings: string): void {
+    this.store.set('lmstudio-settings', settings);
   }
 }
 
