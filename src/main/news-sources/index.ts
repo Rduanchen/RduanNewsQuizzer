@@ -1,19 +1,7 @@
 import { ipcMain, shell } from 'electron';
-// import { getBBCNewsTitles, getBBCNewsContent } from './plugins/bbc_clawer';
 import BBC from './plugins/bbc_clawer';
 import SelfDefine from './plugins/self-define';
 import SourcePlugins from './pluginsPrototype';
-
-// 新聞內容格式
-// export interface NewsContent {
-//   coverUrl: string | null;
-//   title: string;
-//   description: string;
-//   newsLink: string;
-//   content: string;
-//   author?: string;
-//   date?: string;
-// }
 
 interface NewsSource {
   name: string;
@@ -91,30 +79,6 @@ class NewsSourceManager {
       }
     );
 
-    // 新增：允許自訂文章（可以直接 return，或記錄到 localStorage/db 以利分析）
-    // ipcMain.handle('news-sources:getCustomArticleContent', (_event, customArticle: string) => {
-    //   if (
-    //     !customArticle ||
-    //     typeof customArticle !== 'string' ||
-    //     customArticle.trim().length === 0
-    //   ) {
-    //     return { success: false, error: '文章內容不可為空' };
-    //   }
-    //   // 前端直接傳遞自訂內容即可
-    //   return {
-    //     success: true,
-    //     data: {
-    //       coverUrl: null,
-    //       title: '自訂文章',
-    //       description: customArticle.substring(0, 50) + '...',
-    //       newsLink: '',
-    //       content: customArticle,
-    //       author: '',
-    //       date: ''
-    //     }
-    //   };
-    // });
-
     // 打開外部網址
     ipcMain.handle('open-external-url', (_event, url: string) => {
       if (url && typeof url === 'string') {
@@ -126,7 +90,11 @@ class NewsSourceManager {
 
   public async getPlugins(): Promise<SourcePlugins[]> {
     const pluginClasses = [BBC, SelfDefine];
-    return pluginClasses.map((PluginClass) => new PluginClass());
+    const instances = pluginClasses.map((PluginClass) => new PluginClass());
+    instances.forEach((instance) => {
+      instance.setup();
+    });
+    return instances;
   }
 
   public getPluginSourceNames(): NewsSource[] {
