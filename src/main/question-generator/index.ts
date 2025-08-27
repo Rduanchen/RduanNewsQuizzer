@@ -6,6 +6,13 @@ import { LmStudioGenerator } from './lmStudioGenerator';
 import { LmStudioSettings } from './settings/lmStudioSettings';
 import { OpenAISettingsManager, OpenAISettings } from './settings/openAISettings';
 import { OpenAIService } from './openaiService';
+import { StatusCode, Reply } from '../error-handle/index';
+import { storeManager } from '../store/controller';
+
+const LLMSources = ['OpenAI', 'LMStudio'];
+interface LLMOption {
+  source: string;
+}
 
 export default class QuestionsManager {
   public setup() {
@@ -69,5 +76,37 @@ export default class QuestionsManager {
     ipcMain.handle('settings:get-openai-options', async () => {
       return OpenAISettingsManager.getOpenAIOptions();
     });
+
+    ipcMain.handle('settings:get-llm-sources-options', async () => {
+      return {
+        statusCode: StatusCode.OK,
+        message: 'Successfully retrieved sources options',
+        data: LLMSources
+      } as Reply;
+    });
+
+    ipcMain.handle('settings:get-current-llm-option', async () => {
+      return this.getCurrentLLMOption();
+    });
+    ipcMain.handle('settings:set-current-llm-option', async (_event, option: LLMOption) => {
+      return this.setCurrentLLMOption(option);
+    });
+  }
+  public getCurrentLLMOption() {
+    let values = JSON.parse(storeManager.getLLMSettings());
+    return {
+      statusCode: StatusCode.OK,
+      message: 'Successfully retrieved current LLM option',
+      data: values
+    };
+  }
+  public setCurrentLLMOption(option: LLMOption) {
+    const settingString = JSON.stringify(option);
+    storeManager.setLLMSettings(settingString);
+    return {
+      statusCode: StatusCode.OK,
+      message: 'Successfully set current LLM option',
+      data: option
+    };
   }
 }
