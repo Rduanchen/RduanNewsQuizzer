@@ -68,6 +68,13 @@ class StoreManager {
   public setLMStudioSettings(settings: string): void {
     this.store.set('lmstudio-settings', settings);
   }
+
+  public getLLMSettings(): string {
+    return this.store.get('llm-settings', '');
+  }
+  public setLLMSettings(settings: string): void {
+    this.store.set('llm-settings', settings);
+  }
 }
 
 export const storeManager = new StoreManager();
