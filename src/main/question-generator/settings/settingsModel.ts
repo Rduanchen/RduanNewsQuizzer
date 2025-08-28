@@ -102,7 +102,7 @@ const SupportedQuestionsStyle = [
 
 interface GenerateSettings {
   questionAmount: number;
-  questionStyle: number[];
+  questionStyle: string[];
   testStyle: 'TOEIC' | 'IELTS' | 'TOEFL' | 'ALL';
 }
 
