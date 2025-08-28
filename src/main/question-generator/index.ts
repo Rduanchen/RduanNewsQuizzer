@@ -15,6 +15,7 @@ interface LLMOption {
 }
 
 export default class QuestionsManager {
+  private openAI = new OpenAIService();
   public setup() {
     // Question settings
     ipcMain.handle('settings:get-questions-settings', async () => {
@@ -62,7 +63,8 @@ export default class QuestionsManager {
       'settings:update-openai-settings',
       async (_event, newSettings: OpenAISettings) => {
         // Verify OpenAI key before saving (endpoint property removed)
-        const verifyResult = await OpenAIService.prototype.init(newSettings.apiKey);
+        console.log('Verifying OpenAI API key...');
+        const verifyResult = await this.openAI.init(newSettings.apiKey);
         if (verifyResult.statusCode === 200) {
           // Save settings if verification succeeds
           return OpenAISettingsManager.setOpenAISettings(newSettings);
@@ -93,12 +95,17 @@ export default class QuestionsManager {
     });
   }
   public getCurrentLLMOption() {
-    let values = JSON.parse(storeManager.getLLMSettings());
-    return {
-      statusCode: StatusCode.OK,
-      message: 'Successfully retrieved current LLM option',
-      data: values
-    };
+    const settingString = storeManager.getLLMSettings();
+    if (settingString && settingString !== '') {
+      let values = JSON.parse(settingString);
+      return {
+        statusCode: StatusCode.OK,
+        message: 'Successfully retrieved current LLM option',
+        data: values
+      };
+    } else {
+      this.setCurrentLLMOption({ source: LLMSources[0] });
+    }
   }
   public setCurrentLLMOption(option: LLMOption) {
     const settingString = JSON.stringify(option);
