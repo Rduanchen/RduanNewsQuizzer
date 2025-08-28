@@ -3,12 +3,13 @@ import { ipcMain } from 'electron';
 import { newsSourceManager } from './news-sources';
 
 import { settingsManager } from './store';
-import { questionsManager } from './question-generator';
+import questionsManager from './question-generator';
 
 function setupAllIPC() {
   newsSourceManager.setup();
   settingsManager.setup();
-  questionsManager.setup();
+  const QuestionsManager = new questionsManager();
+  QuestionsManager.setup();
   ipcMain.handle('test', () => {
     return 'Test response';
   });
