@@ -1,37 +1,57 @@
 import { ipcRenderer } from 'electron';
+import { Reply } from '../main/error-handle/index';
+import { GenerateSettings } from '../main/question-generator/settings/settingsModel';
+import { LMStudioSettings } from '../main/question-generator/settings/lmStudioSettings';
+import { OpenAISettings } from '../main/question-generator/settings/openAISettings';
 
-interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: string;
+// Types for LLM option
+interface LLMOption {
+  source: string;
 }
 
 const settingsAPI = {
-  // API Key 管理
-  getApiKey: async (): Promise<string> => {
-    return await ipcRenderer.invoke('settings:get-api-key');
+  // Question settings
+  getQuestionSettings: async (): Promise<Reply> => {
+    return await ipcRenderer.invoke('settings:get-questions-settings');
+  },
+  updateQuestionSettings: async (newSettings: GenerateSettings): Promise<Reply> => {
+    return await ipcRenderer.invoke('settings:update-questions-settings', newSettings);
+  },
+  getCurrentQuestionSettings: async (): Promise<Reply> => {
+    return await ipcRenderer.invoke('settings:get-current-questions-settings');
   },
 
-  setApiKey: async (apiKey: string): Promise<ApiResponse> => {
-    return await ipcRenderer.invoke('settings:set-api-key', apiKey);
+  // LM Studio settings
+  getLMStudioSettings: async (): Promise<Reply> => {
+    return await ipcRenderer.invoke('settings:get-lm-studio-settings');
+  },
+  updateLMStudioSettings: async (newSettings: LMStudioSettings): Promise<Reply> => {
+    return await ipcRenderer.invoke('settings:update-lm-studio-settings', newSettings);
+  },
+  verifyLMStudioLiveness: async (): Promise<Reply> => {
+    return await ipcRenderer.invoke('settings:verify-lm-studio-liveness');
   },
 
-  // 問題生成設定
-  getQuestionSettings: async (): Promise<any> => {
-    return await ipcRenderer.invoke('settings:get-question-settings');
+  // OpenAI settings
+  getOpenAISettings: async (): Promise<Reply> => {
+    return await ipcRenderer.invoke('settings:get-openai-settings');
+  },
+  updateOpenAISettings: async (newSettings: OpenAISettings): Promise<Reply> => {
+    return await ipcRenderer.invoke('settings:update-openai-settings', newSettings);
+  },
+  getOpenAIOptions: async (): Promise<Reply> => {
+    return await ipcRenderer.invoke('settings:get-openai-options');
   },
 
-  setQuestionSettings: async (settings: any): Promise<ApiResponse> => {
-    return await ipcRenderer.invoke('settings:set-question-settings', settings);
+  // LLM sources option
+  getLLMSourcesOptions: async (): Promise<Reply> => {
+    return await ipcRenderer.invoke('settings:get-llm-sources-options');
   },
-
-  // 使用者偏好
-  getUserPreferences: async (): Promise<any> => {
-    return await ipcRenderer.invoke('settings:get-user-preferences');
+  getCurrentLLMOption: async (): Promise<Reply> => {
+    return await ipcRenderer.invoke('settings:get-current-llm-option');
   },
-
-  setUserPreferences: async (preferences: any): Promise<ApiResponse> => {
-    return await ipcRenderer.invoke('settings:set-user-preferences', preferences);
+  setCurrentLLMOption: async (option: LLMOption): Promise<Reply> => {
+    return await ipcRenderer.invoke('settings:set-current-llm-option', option);
   }
 };
 
