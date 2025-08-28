@@ -1,122 +1,163 @@
 <template>
-  <v-dialog v-model="dialog" max-width="600px" persistent>
+  <v-dialog v-model="dialog" max-width="700px" persistent>
     <template #activator="{ props }">
       <v-btn v-bind="props" icon="mdi-cog" variant="text"></v-btn>
     </template>
-
     <v-card>
       <v-card-title class="text-h5">系統設定</v-card-title>
-
       <v-card-text>
         <v-form ref="form" v-model="valid">
-          <!-- API Key 設定 -->
-          <v-text-field
-            v-model="apiKey"
-            label="OpenAI API Key"
-            :type="showApiKey ? 'text' : 'password'"
-            :append-icon="showApiKey ? 'mdi-eye' : 'mdi-eye-off'"
-            @click:append="showApiKey = !showApiKey"
-            :rules="apiKeyRules"
-            variant="outlined"
-            class="mb-4"
-          ></v-text-field>
-
-          <!-- 問題數量 -->
+          <!-- 題目設定區塊 -->
+          <v-divider class="mb-3"></v-divider>
+          <div class="mb-3 font-weight-bold">題目設定</div>
           <v-slider
-            v-model="questionSettings.amount"
-            label="問題數量"
+            v-model="questionSettings.questionAmount"
+            label="題目數量"
             min="1"
             max="20"
             step="1"
             thumb-label="always"
-            class="mb-4"
+            class="mb-3"
           ></v-slider>
-
-          <!-- 考試風格 - 從後端載入 -->
           <v-select
-            v-model="questionSettings.style"
-            :items="examStyles"
-            item-title="title"
-            item-value="value"
-            label="考試風格"
+            v-model="questionSettings.questionStyle"
+            :items="questionStyles"
+            item-title="name"
+            item-value="name"
+            label="題目風格"
+            multiple
             variant="outlined"
-            class="mb-4"
+            class="mb-3"
             :loading="loadingOptions"
           >
             <template #item="{ props, item }">
               <v-list-item v-bind="props">
-                <v-list-item-title>{{ item.raw.title }}</v-list-item-title>
+                <v-list-item-title>{{ item.raw.name }}</v-list-item-title>
+                <v-list-item-subtitle>{{ item.raw.description }}</v-list-item-subtitle>
+              </v-list-item>
+            </template>
+          </v-select>
+          <v-select
+            v-model="questionSettings.testStyle"
+            :items="testStyles"
+            item-title="name"
+            item-value="name"
+            label="考試類型"
+            variant="outlined"
+            class="mb-3"
+            :loading="loadingOptions"
+          >
+            <template #item="{ props, item }">
+              <v-list-item v-bind="props">
+                <v-list-item-title>{{ item.raw.name }}</v-list-item-title>
                 <v-list-item-subtitle>{{ item.raw.description }}</v-list-item-subtitle>
               </v-list-item>
             </template>
           </v-select>
 
-          <!-- AI 模型 - 從後端載入 -->
-          <v-select
-            v-model="questionSettings.model"
-            :items="availableModels"
-            item-title="title"
-            item-value="value"
-            label="AI 模型"
-            variant="outlined"
-            class="mb-4"
-            :loading="loadingOptions"
+          <!-- 來源切換 -->
+          <v-divider class="mb-3"></v-divider>
+          <div class="mb-3 font-weight-bold">AI 來源選擇</div>
+          <v-btn-toggle
+            v-model="currentSource"
+            mandatory
+            class="mb-3"
+            color="primary"
           >
-            <template #selection="{ item }">
-              <v-chip
-                :color="item.raw.category === 'GPT-5' ? 'primary' : 'secondary'"
-                size="small"
-                class="mr-2"
-              >
-                {{ item.raw.category }}
-              </v-chip>
-              {{ item.raw.title }}
-            </template>
+            <v-btn v-for="src in llmSources" :key="src" :value="src">{{ src }}</v-btn>
+          </v-btn-toggle>
 
-            <template #item="{ props, item }">
-              <v-list-item v-bind="props">
-                <template #prepend>
-                  <v-chip
-                    :color="item.raw.category === 'GPT-5' ? 'primary' : 'secondary'"
-                    size="small"
-                  >
-                    {{ item.raw.category }}
-                  </v-chip>
-                </template>
-                <v-list-item-title>{{ item.raw.title }}</v-list-item-title>
-              </v-list-item>
-            </template>
-          </v-select>
+          <!-- 來源特定設定 -->
+          <v-divider class="mb-3"></v-divider>
+          <div v-if="currentSource === 'OpenAI'">
+            <div class="mb-2 font-weight-bold">OpenAI 設定</div>
+            <v-text-field
+              v-model="openaiSettings.apiKey"
+              label="API Key"
+              :type="showApiKey ? 'text' : 'password'"
+              :append-icon="showApiKey ? 'mdi-eye' : 'mdi-eye-off'"
+              @click:append="showApiKey = !showApiKey"
+              :rules="apiKeyRules"
+              variant="outlined"
+              class="mb-3"
+            ></v-text-field>
+            <v-select
+              v-model="openaiSettings.model"
+              :items="openaiModels"
+              item-title="displayName"
+              item-value="id"
+              label="模型"
+              variant="outlined"
+              class="mb-3"
+              :loading="loadingOptions"
+            >
+              <template #item="{ props, item }">
+                <v-list-item v-bind="props">
+                  <template #prepend>
+                    <v-chip
+                      :color="item.raw.category === 'GPT-5' ? 'primary' : 'secondary'"
+                      size="small"
+                    >
+                      {{ item.raw.category }}
+                    </v-chip>
+                  </template>
+                  <v-list-item-title>
+                    {{ item.raw.displayName || item.raw.id }}
+                  </v-list-item-title>
+                  <v-list-item-subtitle>
+                    單題價格 ${{ item.raw.price || '-' }}
+                  </v-list-item-subtitle>
+                </v-list-item>
+              </template>
+            </v-select>
+            <v-select
+              v-model="openaiSettings.reasoningEffort"
+              :items="reasoningEfforts"
+              item-title="title"
+              item-value="value"
+              label="推理強度"
+              variant="outlined"
+              class="mb-3"
+              :loading="loadingOptions"
+            >
+              <template #item="{ props, item }">
+                <v-list-item v-bind="props">
+                  <v-list-item-title>{{ item.raw.title }}</v-list-item-title>
+                  <v-list-item-subtitle>{{ item.raw.description }}</v-list-item-subtitle>
+                </v-list-item>
+              </template>
+            </v-select>
+          </div>
+          <div v-else-if="currentSource === 'LMStudio'">
+            <div class="mb-2 font-weight-bold">LM Studio 設定</div>
+            <v-text-field
+              v-model="lmStudioSettings.model"
+              label="模型名稱"
+              variant="outlined"
+              class="mb-3"
+            ></v-text-field>
+          </div>
 
-          <!-- 推理強度 - 從後端載入 -->
-          <v-select
-            v-model="questionSettings.reasoningEffort"
-            :items="reasoningOptions"
-            item-title="title"
-            item-value="value"
-            label="推理強度"
-            variant="outlined"
-            class="mb-4"
-            :loading="loadingOptions"
+          <!-- 錯誤訊息 -->
+          <v-alert
+            v-if="errorMsg"
+            type="error"
+            class="mb-3"
+            border="start"
+            border-color="red"
+            prominent
           >
-            <template #item="{ props, item }">
-              <v-list-item v-bind="props">
-                <v-list-item-title>{{ item.raw.title }}</v-list-item-title>
-                <v-list-item-subtitle>{{ item.raw.description }}</v-list-item-subtitle>
-              </v-list-item>
-            </template>
-          </v-select>
+            {{ errorMsg }}
+          </v-alert>
         </v-form>
       </v-card-text>
-
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn color="grey" variant="text" @click="closeDialog">取消</v-btn>
         <v-btn
           color="primary"
           variant="elevated"
-          @click="saveSettings"
-          :disabled="!valid || loadingOptions"
+          @click="manualSave"
           :loading="saving"
         >
           儲存
@@ -129,178 +170,210 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue';
 
-// Props & Emits - 修復 v-model 問題
 const props = defineProps({
-  modelValue: {
-    type: Boolean,
-    default: false
-  }
+  modelValue: Boolean
 });
+const emit = defineEmits(['update:modelValue', 'settings-updated']);
 
-const emit = defineEmits(['settings-updated', 'update:modelValue']);
-
-// 響應式數據 - 修復 dialog 綁定
 const dialog = ref(props.modelValue);
-const valid = ref(false);
-const showApiKey = ref(false);
-const apiKey = ref('');
+const valid = ref(true);
 const loadingOptions = ref(false);
 const saving = ref(false);
+const errorMsg = ref('');
+const showApiKey = ref(false);
 
-// 選項資料 - 從後端載入
-const availableModels = ref([]);
-const examStyles = ref([]);
-const reasoningOptions = ref([]);
-
+// 題目設定
 const questionSettings = ref({
-  amount: 5,
-  style: 0,
-  model: 'gpt-5-mini',
+  questionAmount: 10,
+  questionStyle: [], // Must be an array of strings
+  testStyle: 'ALL'
+});
+const questionStyles = ref([]); // 由API取得
+const testStyles = ref([]); // 由API取得
+
+// AI 來源
+const llmSources = ref([]);
+const currentSource = ref('OpenAI');
+
+// OpenAI 設定
+const openaiSettings = ref({
+  apiKey: '',
+  model: '',
   reasoningEffort: 'low'
 });
+const openaiModels = ref([]);
+const reasoningEfforts = ref([]);
 
-// 驗證規則
 const apiKeyRules = [
   (v) => !!v || 'API Key 為必填項目',
-  (v) => v.startsWith('sk-') || 'API Key 應該以 sk- 開頭'
+  (v) => v.startsWith('sk-') || 'API Key 應以 sk- 開頭'
 ];
 
-// 監聽 modelValue 變化 - 修復雙向綁定
-watch(
-  () => props.modelValue,
-  (newVal) => {
-    dialog.value = newVal;
-    if (newVal) {
-      // 對話框開啟時重新載入數據
-      loadSettings();
-      if (availableModels.value.length === 0) {
-        loadAllOptions();
-      }
-    }
-  }
-);
-
-// 監聽 dialog 變化，同步 modelValue
-watch(dialog, (newVal) => {
-  emit('update:modelValue', newVal);
+// LM Studio 設定
+const lmStudioSettings = ref({
+  model: ''
 });
 
-// 生命周期
+// 定時同步
+let timer = null;
+const syncInterval = 2000;
+
+// 初始化與載入
 onMounted(async () => {
   await loadAllOptions();
-  await loadSettings();
+  await getCurrentQuestionSettings();
+  startAutoSync();
 });
 
-// 載入所有選項
+watch(() => props.modelValue, (val) => {
+  dialog.value = val;
+  if (val) {
+    getCurrentQuestionSettings();
+    startAutoSync();
+  } else {
+    stopAutoSync();
+  }
+});
+
+watch(dialog, (val) => {
+  emit('update:modelValue', val);
+  if (!val) stopAutoSync();
+});
+
+// 載入所有選項（API ONLY）
 const loadAllOptions = async () => {
   loadingOptions.value = true;
   try {
-    // 並行載入所有選項
-    const [modelsResponse, stylesResponse, reasoningResponse] = await Promise.all([
-      window.api.questions.getAvailableModels(),
-      window.api.questions.getExamStyles(),
-      window.api.questions.getReasoningOptions()
-    ]);
-
-    // 處理模型選項
-    if (modelsResponse.success) {
-      availableModels.value = modelsResponse.data.map((model) => ({
-        title: model.displayName,
-        value: model.id,
-        category: model.category
-      }));
-    } else {
-      console.error('Failed to load models:', modelsResponse.error);
-      // 備用方案
-      availableModels.value = [{ title: 'GPT-5 Mini', value: 'gpt-5-mini', category: 'GPT-5' }];
+    // LLM Source
+    const llmSourceRes = await window.api.settings.getLLMSourcesOptions();
+    if (llmSourceRes.statusCode === 200 && Array.isArray(llmSourceRes.data)) {
+      llmSources.value = llmSourceRes.data;
+      currentSource.value = llmSources.value[0] || 'OpenAI';
     }
 
-    // 處理考試風格選項
-    if (stylesResponse.success) {
-      examStyles.value = stylesResponse.data.map((style) => ({
-        title: style.title,
-        value: style.value,
-        description: style.description
+    // OpenAI options (模型/推理強度)
+    const openaiOptionsRes = await window.api.settings.getOpenAIOptions();
+    if (openaiOptionsRes.statusCode === 200) {
+      openaiModels.value = openaiOptionsRes.data.models.map((m) => ({
+        ...m,
+        displayName: m.displayName || m.id
       }));
+      reasoningEfforts.value = openaiOptionsRes.data.reasoningEfforts;
     } else {
-      console.error('Failed to load exam styles:', stylesResponse.error);
-      // 備用方案
-      examStyles.value = [{ title: '全部風格', value: 0, description: '自動選擇最適合的風格' }];
+      errorMsg.value = openaiOptionsRes.message;
     }
 
-    // 處理推理強度選項
-    if (reasoningResponse.success) {
-      reasoningOptions.value = reasoningResponse.data.map((option) => ({
-        title: option.title,
-        value: option.value,
-        description: option.description
-      }));
-    } else {
-      console.error('Failed to load reasoning options:', reasoningResponse.error);
-      // 備用方案
-      reasoningOptions.value = [{ title: '低', value: 'low', description: '快速生成' }];
+    // 題型/考試型
+    const qOptionRes = await window.api.settings.getQuestionSettings();
+    if (qOptionRes.statusCode === 200 && qOptionRes.data) {
+      questionStyles.value = qOptionRes.data.questionStyles || [];
+      testStyles.value = qOptionRes.data.testStyles || [];
     }
-  } catch (error) {
-    console.error('Failed to load options:', error);
-    // 全部失敗時的備用方案
-    availableModels.value = [{ title: 'GPT-5 Mini', value: 'gpt-5-mini', category: 'GPT-5' }];
-    examStyles.value = [{ title: '全部風格', value: 0, description: '自動選擇最適合的風格' }];
-    reasoningOptions.value = [{ title: '低', value: 'low', description: '快速生成' }];
+  } catch (e) {
+    errorMsg.value = '選項載入失敗';
   } finally {
     loadingOptions.value = false;
   }
 };
 
-// 載入設定
-const loadSettings = async () => {
+// 載入當前設定（正確使用 getCurrentQuestionSettings API）
+const getCurrentQuestionSettings = async () => {
+  errorMsg.value = '';
   try {
-    apiKey.value = await window.api.settings.getApiKey();
-    const settings = await window.api.settings.getQuestionSettings();
-    questionSettings.value = { ...questionSettings.value, ...settings };
-  } catch (error) {
-    console.error('Failed to load settings:', error);
-  }
-};
-
-// 儲存設定
-const saveSettings = async () => {
-  saving.value = true;
-  try {
-    // 建立可序列化的資料物件
-    const settingsToSave = {
-      amount: questionSettings.value.amount,
-      style: questionSettings.value.style,
-      model: questionSettings.value.model,
-      reasoningEffort: questionSettings.value.reasoningEffort
-    };
-
-    // 分別呼叫兩個 API
-    const apiKeyResult = await window.api.settings.setApiKey(apiKey.value);
-    const settingsResult = await window.api.settings.setQuestionSettings(settingsToSave);
-
-    if (apiKeyResult.success && settingsResult.success) {
-      emit('settings-updated', {
-        apiKey: apiKey.value,
-        questionSettings: settingsToSave
-      });
-
-      // 自動關閉對話框
-      dialog.value = false;
-    } else {
-      const error = apiKeyResult.error || settingsResult.error || '儲存設定時發生錯誤';
-      console.error('Failed to save settings:', error);
+    const qRes = await window.api.settings.getCurrentQuestionSettings();
+    if (qRes.statusCode === 200 && qRes.data) {
+      questionSettings.value.questionAmount = qRes.data.questionAmount ?? 10;
+      questionSettings.value.testStyle = qRes.data.testStyle ?? 'ALL';
+      // questionStyle: must be array of strings
+      questionSettings.value.questionStyle = Array.isArray(qRes.data.questionStyle)
+        ? qRes.data.questionStyle
+        : [];
     }
-  } catch (error) {
-    console.error('Failed to save settings:', error);
-  } finally {
-    saving.value = false;
+    // LLM 來源
+    const llmRes = await window.api.settings.getCurrentLLMOption();
+    if (llmRes.statusCode === 200 && llmRes.data?.source) {
+      currentSource.value = llmRes.data.source;
+    }
+    // OpenAI
+    const openaiRes = await window.api.settings.getOpenAISettings();
+    if (openaiRes.statusCode === 200 && openaiRes.data) {
+      Object.assign(openaiSettings.value, openaiRes.data);
+    }
+    // LM Studio
+    const lmRes = await window.api.settings.getLMStudioSettings();
+    if (lmRes.statusCode === 200 && lmRes.data) {
+      Object.assign(lmStudioSettings.value, lmRes.data);
+    }
+  } catch (e) {
+    errorMsg.value = '設定載入失敗';
   }
 };
 
-// 關閉對話框 - 修復關閉邏輯
+// 自動同步
+// const startAutoSync = () => {
+//   stopAutoSync();
+//   timer = setInterval(() => {
+//     applySettings();
+//   }, syncInterval);
+// };
+
+const stopAutoSync = () => {
+  if (timer) clearInterval(timer);
+};
+
+// 應用並驗證設定
+const applySettings = async () => {
+  errorMsg.value = '';
+  let result;
+  // 題目設定
+  // questionSettings.questionStyle is already string[]
+  const sendQuestionSettings = {
+    questionAmount: questionSettings.value.questionAmount,
+    questionStyle: questionSettings.value.questionStyle,
+    testStyle: questionSettings.value.testStyle
+  };
+  result = await window.api.settings.updateQuestionSettings(sendQuestionSettings);
+  if (result.statusCode !== 200) {
+    errorMsg.value = result.message;
+    return;
+  }
+  // 來源
+  result = await window.api.settings.setCurrentLLMOption({ source: currentSource.value });
+  if (result.statusCode !== 200) {
+    errorMsg.value = result.message;
+    return;
+  }
+  // 各來源設定
+  if (currentSource.value === 'OpenAI') {
+    result = await window.api.settings.updateOpenAISettings({ ...openaiSettings.value });
+    if (result.statusCode !== 200) {
+      errorMsg.value = result.message;
+      return;
+    }
+  } else if (currentSource.value === 'LMStudio') {
+    result = await window.api.settings.updateLMStudioSettings({ ...lmStudioSettings.value });
+    if (result.statusCode !== 200) {
+      errorMsg.value = result.message;
+      return;
+    }
+  }
+};
+
+// 手動儲存
+const manualSave = async () => {
+  saving.value = true;
+  await applySettings();
+  saving.value = false;
+  if (!errorMsg.value) {
+    emit('settings-updated');
+    dialog.value = false;
+  }
+};
+
+// 關閉對話框
 const closeDialog = () => {
   dialog.value = false;
-  // 重新載入設定以還原變更
-  loadSettings();
+  stopAutoSync();
+  getCurrentQuestionSettings();
 };
 </script>
