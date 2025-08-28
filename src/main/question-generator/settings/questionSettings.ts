@@ -4,7 +4,7 @@ import { Reply, StatusCode, logInfo, logError } from '../../error-handle/index';
 
 const DEFAULT_SETTINGS: GenerateSettings = {
   questionAmount: 10,
-  questionStyle: [0], // default to the first style
+  questionStyle: ['selection'], // default to the first style
   testStyle: 'ALL'
 };
 
