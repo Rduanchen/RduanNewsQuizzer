@@ -2,7 +2,7 @@ import { OpenAI } from 'openai';
 import { storeManager } from '../store/controller';
 import { Reply, StatusCode, logInfo, logError } from '../error-handle/index';
 
-interface MessagePayload {
+export interface MessagePayload {
   prompt: any;
   model?: string;
   effort?: 'low' | 'medium' | 'high';

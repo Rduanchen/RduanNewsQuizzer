@@ -9,7 +9,7 @@ import { OpenAIService } from './openaiService';
 import { StatusCode, Reply } from '../error-handle/index';
 import { storeManager } from '../store/controller';
 
-const LLMSources = ['OpenAI', 'LMStudio'];
+export const LLMSources = ['OpenAI', 'LMStudio'];
 interface LLMOption {
   source: string;
 }
