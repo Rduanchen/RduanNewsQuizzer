@@ -57,6 +57,18 @@
       <v-card-text>
         <p style="white-space: pre-wrap;">{{ generatedArticle.content }}</p>
       </v-card-text>
+      <!-- MODIFICATION START: Added "Create Quiz" button -->
+      <v-card-actions class="pa-4">
+        <v-btn
+          @click="goToQuizPage"
+          color="success"
+          variant="elevated"
+          block
+        >
+          {{ $t('aiGenerate.createQuizButton') }}
+        </v-btn>
+      </v-card-actions>
+      <!-- MODIFICATION END -->
     </v-card>
 
   </v-container>
@@ -65,8 +77,10 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router'; // Import useRouter
 
 const { t } = useI18n();
+const router = useRouter(); // Initialize router
 
 // --- Reactive State ---
 const formData = ref({
@@ -94,7 +108,8 @@ const handleGenerate = async () => {
 
   isLoading.value = true;
   error.value = '';
-  generatedArticle.value = null; // Clear previous article
+  // Keep the old article visible while regenerating for a better UX
+  // generatedArticle.value = null; 
 
   try {
     const reply = await api.generateArticleContent({
@@ -114,4 +129,21 @@ const handleGenerate = async () => {
     isLoading.value = false;
   }
 };
+
+// --- MODIFICATION START: New function to navigate to quiz page ---
+const goToQuizPage = () => {
+  if (!generatedArticle.value) return;
+
+  const quizData = {
+    title: generatedArticle.value.title,
+    article: generatedArticle.value.content,
+    // author, date, coverImage are not available from this source
+  };
+
+  router.push({
+    name: 'QuizPage',
+    params: { quizData: JSON.stringify(quizData) },
+  });
+};
+// --- MODIFICATION END ---
 </script>

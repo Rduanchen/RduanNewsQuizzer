@@ -52,6 +52,9 @@ const settingsAPI = {
   },
   setCurrentLLMOption: async (option: LLMOption): Promise<Reply> => {
     return await ipcRenderer.invoke('settings:set-current-llm-option', option);
+  },
+  isReadyToGenerate: async (): Promise<Reply> => {
+    return await ipcRenderer.invoke('settings:verify-is-setting-ready');
   }
 };
 

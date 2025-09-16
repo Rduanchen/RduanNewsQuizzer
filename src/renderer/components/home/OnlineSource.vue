@@ -24,7 +24,11 @@
 
     <v-row v-if="!isLoadingHeadlines && headlines.length > 0">
       <v-col v-for="(news, index) in headlines" :key="index" cols="12" sm="6" md="4" lg="3">
-        <NewsCard :news="news" />
+        <NewsCard 
+            :news="news" 
+            :loading="loadingCardId === news.newsLink"
+            @select="handleNewsSelect" 
+        />
       </v-col>
     </v-row>
 
@@ -40,9 +44,11 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 import NewsCard from '../NewsCard.vue';
 
 const { t } = useI18n();
+const router = useRouter();
 
 // --- Reactive State ---
 const sources = ref([]);
@@ -52,6 +58,7 @@ const isLoadingSources = ref(false);
 const isLoadingHeadlines = ref(false);
 const hasSelectedSource = ref(false);
 const error = ref('');
+const loadingCardId = ref(null); // To show loading spinner on the specific card
 
 // --- API Communication ---
 const api = window.api.news; 
@@ -64,19 +71,12 @@ const fetchSources = async () => {
     const reply = await api.getSources();
     if (reply.statusCode === 200 && reply.data && reply.data.length > 0) {
       sources.value = reply.data.map((name, index) => ({ name, index }));
-      
-      // --- MODIFICATION START ---
-      // Set the first source as the default selection
       const defaultSource = sources.value[0];
       selectedSource.value = defaultSource;
-      // Automatically fetch headlines for the default source
       await handleSourceSelection(defaultSource);
-      // --- MODIFICATION END ---
-
     } else if (reply.statusCode !== 200) {
       throw new Error(reply.message || 'Failed to fetch sources');
     }
-    // If reply.data is empty or null, the dropdown will simply remain empty.
   } catch (err) {
     error.value = `${t('onlineSource.errorSources')}: ${err.message}`;
   } finally {
@@ -104,9 +104,7 @@ const fetchHeadlines = async () => {
 
 const handleSourceSelection = async (source) => {
   if (!source) return;
-  
   hasSelectedSource.value = true;
-  // Set loading state for headlines, but don't clear them yet for a smoother UI
   isLoadingHeadlines.value = true; 
   error.value = '';
   try {
@@ -118,8 +116,36 @@ const handleSourceSelection = async (source) => {
   } catch (err) {
     error.value = `${t('onlineSource.errorSelect')}: ${err.message}`;
     isLoadingHeadlines.value = false;
-    headlines.value = []; // Clear headlines on error
+    headlines.value = [];
   }
+};
+
+const handleNewsSelect = async (news) => {
+    if (!news || !news.newsLink) return;
+
+    loadingCardId.value = news.newsLink; // Set loading on the clicked card
+    error.value = '';
+
+    try {
+        const reply = await api.getNewsContent(news.newsLink);
+        if (reply.statusCode === 200) {
+            const quizData = {
+                title: reply.data.title,
+                coverImage: news.coverUrl,
+                date: reply.data.date,
+                author: reply.data.author,
+                article: reply.data.content,
+            };
+            // Navigate to QuizPage with the data
+            router.push({ name: 'QuizPage', params: { quizData: JSON.stringify(quizData) } });
+        } else {
+            throw new Error(reply.message || t('onlineSource.errorContent'));
+        }
+    } catch (err) {
+        error.value = `${t('onlineSource.errorContent')}: ${err.message}`;
+    } finally {
+        loadingCardId.value = null; // Remove loading state
+    }
 };
 
 // --- Lifecycle Hooks ---

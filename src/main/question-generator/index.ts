@@ -92,6 +92,55 @@ export default class QuestionsManager {
     ipcMain.handle('settings:set-current-llm-option', async (_event, option: LLMOption) => {
       return this.setCurrentLLMOption(option);
     });
+    ipcMain.handle('settings:verify-is-setting-ready', async () => {
+      const llmOptionReply = this.getCurrentLLMOption();
+      if (llmOptionReply.statusCode !== StatusCode.OK) {
+        return {
+          statusCode: llmOptionReply.statusCode,
+          message: llmOptionReply.message,
+          data: false
+        } as Reply;
+      }
+      const llmOption = llmOptionReply.data as LLMOption;
+      if (llmOption.source === 'OpenAI') {
+        const verifyResult = await this.openAI.init();
+        if (verifyResult.statusCode !== StatusCode.OK) {
+          return {
+            statusCode: verifyResult.statusCode,
+            message: 'OpenAI settings are not properly configured',
+            data: false,
+            error: verifyResult.error
+          } as Reply;
+        } else {
+          return {
+            statusCode: StatusCode.OK,
+            message: 'OpenAI settings are properly configured',
+            data: true
+          } as Reply;
+        }
+      } else if (llmOption.source === 'LMStudio') {
+        if (!(await LmStudioGenerator.isServiceAvailable()).data) {
+          return {
+            statusCode: StatusCode.InternalError,
+            message: 'LM Studio service is unavailable',
+            data: false,
+            error: new Error('LM Studio service is unavailable')
+          } as Reply;
+        } else {
+          return {
+            statusCode: StatusCode.OK,
+            message: 'LM Studio settings are properly configured',
+            data: true
+          } as Reply;
+        }
+      }
+      return {
+        statusCode: StatusCode.InvalidModelSetting,
+        message: 'No valid LLM source selected',
+        data: false,
+        error: new Error('No valid LLM source selected')
+      } as Reply;
+    });
   }
   public getCurrentLLMOption() {
     const settingString = storeManager.getLLMSettings();

@@ -2,20 +2,19 @@
   "home": {
     "onlineSource": "Online Source",
     "selfUpload": "Self Upload",
-    "aiGenerate": "AI Generate",
-    "onlineSourceDesc": "Fetch news from an online source to generate a quiz.",
-    "selfUploadDesc": "Upload your own text file to generate a quiz.",
-    "aiGenerateDesc": "Generate a quiz from a topic using AI."
+    "aiGenerate": "AI Generate"
   },
   "onlineSource": {
     "sourceSelectLabel": "Choose a news source",
     "errorSources": "Error fetching sources",
     "errorSelect": "Error selecting source",
     "errorHeadlines": "Error fetching headlines",
-    "noHeadlines": "No headlines found for the selected source."
+    "noHeadlines": "No headlines found for the selected source.",
+    "errorContent": "Error fetching article content"
   },
   "newsCard": {
-    "readMore": "Read More"
+    "readMore": "Read More",
+    "select": "Select"
   },
   "aiGenerate": {
     "formTitle": "Generate Article with AI",
@@ -25,12 +24,39 @@
     "generateButton": "Generate",
     "regenerateButton": "Regenerate",
     "errorPrefix": "Generation Failed",
-    "errorDefault": "An unknown error occurred."
+    "errorDefault": "An unknown error occurred.",
+    "createQuizButton": "Create Quiz with this Article"
   },
   "selfUpload": {
     "formTitle": "Create Quiz from Your Text",
     "titleLabel": "Title",
     "contentLabel": "Content",
     "submitButton": "Create Quiz"
+  },
+  "quizPage": {
+    "title": "This is the quiz page",
+    "by": "By",
+    "noData": "No Article Data Provided",
+    "noDataSubtitle": "Please select an article from the home page first.",
+    "goHome": "Go to Home"
+  },
+  "settingsPreview": {
+    "title": "Generation Options",
+    "questionSettings": "Question Settings",
+    "questionAmount": "Number of Questions",
+    "testStyle": "Test Type",
+    "questionStyle": "Question Styles",
+    "aiSettings": "AI Settings",
+    "aiSource": "AI Source",
+    "model": "Model",
+    "reasoningEffort": "Reasoning Effort",
+    "startButton": "Start",
+    "errorLoading": "Failed to load settings preview.",
+    "serviceNotReady": "Generation service is not ready. Please check your settings.",
+    "notSet": "Not set"
+  },
+  "articleDisplay": {
+    "title": "Article Content",
+    "noContent": "Article content is not available."
   }
 }

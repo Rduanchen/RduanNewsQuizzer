@@ -1,5 +1,5 @@
 <template>
-  <v-card class="d-flex flex-column" height="100%" hover @click="openLink">
+  <v-card class="d-flex flex-column" height="100%" hover>
     <v-img
       :src="news.coverUrl || defaultImage"
       class="align-end"
@@ -15,16 +15,24 @@
     </v-card-text>
 
     <v-card-actions>
-      <v-spacer></v-spacer>
       <v-btn color="primary" variant="text" @click.stop="openLink">
         {{ $t('newsCard.readMore') }}
+      </v-btn>
+      <v-spacer></v-spacer>
+      <v-btn 
+        :loading="loading"
+        color="primary" 
+        variant="elevated" 
+        @click.stop="$emit('select', news)"
+      >
+        {{ $t('newsCard.select') }}
       </v-btn>
     </v-card-actions>
   </v-card>
 </template>
 
 <script setup>
-import { defineProps } from 'vue';
+import { defineProps, defineEmits } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
@@ -40,9 +48,14 @@ const props = defineProps({
       newsLink: '#',
     }),
   },
+  loading: {
+    type: Boolean,
+    default: false,
+  }
 });
 
-// A placeholder image if the news article has no cover
+defineEmits(['select']);
+
 const defaultImage = 'https://cdn.vuetifyjs.com/images/cards/docks.jpg';
 
 const openLink = () => {

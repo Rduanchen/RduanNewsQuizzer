@@ -41,8 +41,10 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router'; // Import useRouter
 
 const { t } = useI18n();
+const router = useRouter(); // Initialize the router
 
 // --- Reactive State ---
 const formData = ref({
@@ -59,9 +61,18 @@ const isFormValid = computed(() => {
 const handleSubmit = () => {
   if (!isFormValid.value) return;
 
-  // For now, we just log the data to the console.
-  // In the future, you would call your backend API here.
-  console.log('Submitting user-provided article:', formData.value);
-  alert('Quiz generation from custom text is not yet implemented.');
+  // Construct the data object for the QuizPage
+  // We only have title and content, the other fields will be undefined
+  const quizData = {
+    title: formData.value.title,
+    article: formData.value.content,
+    // author, date, and coverImage are missing, which is fine
+  };
+
+  // Navigate to the QuizPage and pass the data as a route parameter
+  router.push({
+    name: 'QuizPage',
+    params: { quizData: JSON.stringify(quizData) },
+  });
 };
 </script>

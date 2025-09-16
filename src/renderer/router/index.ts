@@ -40,6 +40,7 @@ import Home from '../views/Home.vue';
 import OnlineSource from '../components/home/OnlineSource.vue';
 import SelfUpload from '../components/home/SelfUpload.vue';
 import AIGenerate from '../components/home/AIGenerate.vue';
+import QuizPage from '../views/QuizPage.vue';
 
 const routes = [
   {
@@ -64,6 +65,13 @@ const routes = [
         component: AIGenerate
       }
     ]
+  },
+  {
+    // Note the ':quizData?' to make the parameter optional
+    path: '/quiz/:quizData?',
+    name: 'QuizPage',
+    component: QuizPage,
+    props: true // This allows the route params to be passed as props
   }
 ];
 
