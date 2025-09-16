@@ -91,56 +91,56 @@ class NewsSourceManager {
     });
 
     // 根據來源與連結爬取新聞內容
-    ipcMain.handle(
-      'news-sources:getNewsContentBySource',
-      async (_event, sourceIndex: number, newsUrl: string) => {
-        try {
-          if (!newsUrl || typeof newsUrl !== 'string') {
-            logError('Invalid news link', 'NewsSourceManager');
-            return {
-              statusCode: StatusCode.InvalidModelSetting,
-              message: '無效的新聞連結',
-              error: 'Invalid news URL'
-            } as Reply;
-          }
-
-          const source = this.plugins[sourceIndex];
-          if (!source) {
-            logError('Invalid news source for content', 'NewsSourceManager');
-            return {
-              statusCode: StatusCode.ModelNotFound,
-              message: '無效的新聞來源',
-              error: 'Invalid news source'
-            } as Reply;
-          }
-
-          const content = await source.getNewsContent(newsUrl);
-          logInfo(`Fetched news content from source ${sourceIndex}`, 'NewsSourceManager');
+    ipcMain.handle('news-sources:getNewsContent', async (_event, newsUrl: string) => {
+      let sourceIndex = this.selectedSource;
+      try {
+        if (!newsUrl || typeof newsUrl !== 'string') {
+          logError('Invalid news link', 'NewsSourceManager');
           return {
-            statusCode: StatusCode.OK,
-            message: '新聞內容取得成功',
-            data: content
-          } as Reply;
-        } catch (error) {
-          logError(
-            `Failed to crawl news content: ${error instanceof Error ? error.message : error}`,
-            'NewsSourceManager'
-          );
-          return {
-            statusCode: StatusCode.InternalError,
-            message: '爬取新聞內容失敗',
-            error: error instanceof Error ? error.message : error
+            statusCode: StatusCode.InvalidModelSetting,
+            message: '無效的新聞連結',
+            error: 'Invalid news URL'
           } as Reply;
         }
+
+        const source = this.plugins[sourceIndex];
+        if (!source) {
+          logError('Invalid news source for content', 'NewsSourceManager');
+          return {
+            statusCode: StatusCode.ModelNotFound,
+            message: '無效的新聞來源',
+            error: 'Invalid news source'
+          } as Reply;
+        }
+
+        const content = await source.getNewsContent(newsUrl);
+        logInfo(`Fetched news content from source ${sourceIndex}`, 'NewsSourceManager');
+        return {
+          statusCode: StatusCode.OK,
+          message: '新聞內容取得成功',
+          data: content
+        } as Reply;
+      } catch (error) {
+        logError(
+          `Failed to crawl news content: ${error instanceof Error ? error.message : error}`,
+          'NewsSourceManager'
+        );
+        return {
+          statusCode: StatusCode.InternalError,
+          message: '爬取新聞內容失敗',
+          error: error instanceof Error ? error.message : error
+        } as Reply;
       }
-    );
+    });
 
     // 自動生成文章內容
     ipcMain.handle(
       'news-sources:generateArticleContent',
       async (_event, articleOptions: PromptFormat) => {
         const newsGenerator = new NewsGenerator();
-        newsGenerator.updateSelectedGenerator(this.questionsManager.getCurrentLLMOption().data);
+        newsGenerator.updateSelectedGenerator(
+          this.questionsManager.getCurrentLLMOption().data.source
+        );
         const reply = await newsGenerator.generateNewsArticle(articleOptions);
         return reply;
       }

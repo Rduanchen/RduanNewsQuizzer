@@ -8,6 +8,11 @@ export interface PromptFormat {
   wordCount: number;
 }
 
+export interface GeneratedArticleFormat {
+  title: string;
+  content: string;
+}
+
 export const DefaultPromptFormat: PromptFormat = {
   level: 'A2',
   topic: 'Anything that will inspire me',
@@ -39,10 +44,13 @@ export class NewsGenerator {
   private async useLmStudio(): Promise<Reply> {
     if ((await LmStudioGenerator.isServiceAvailable()).data) {
       const llmReply = await LmStudioGenerator.generateReply(this.buildPrompt(this.prompt));
+      // convert the string to JSON
+      console.log(llmReply);
+      const jsonData = JSON.parse(llmReply.data);
       return {
         statusCode: llmReply.statusCode,
         message: llmReply.message,
-        data: llmReply.data
+        data: jsonData
       } as Reply;
     } else {
       return {
@@ -61,10 +69,12 @@ export class NewsGenerator {
         prompt: this.buildPrompt(this.prompt)
       };
       const llmReply = await openAIService.generateContext(promptText);
+      // convert the string to JSON
+      const jsonData = JSON.parse(llmReply.data);
       return {
         statusCode: llmReply.statusCode,
         message: llmReply.message,
-        data: llmReply.data
+        data: jsonData
       } as Reply;
     } else {
       return {
@@ -85,11 +95,28 @@ export class NewsGenerator {
     if (!prompt.wordCount) {
       prompt.wordCount = DefaultPromptFormat.wordCount;
     }
-    let promptText = `Please write a article base on the following user prompt:
-    Level: ${prompt.level}
-    Topic: ${prompt.topic}
-    Word Count: ${prompt.wordCount}
-    `;
+
+    let promptText = `Please write an article based on the following user prompt:
+  Level: ${prompt.level}
+  Topic: ${prompt.topic}
+  Word Count: ${prompt.wordCount} words (approximately)
+
+  You will need to return the article in a valid JSON format, which looks like the example below:
+
+  {
+    "title": "string", 
+    "content": "string"
+  }
+
+  Important instructions:
+  1. Use double quotes (") for both the title and content values, and escape any internal double quotes within the content (e.g., \"word\").
+  2. Ensure the JSON format is valid, meaning there should be no missing or mismatched quotes, brackets, or commas.
+  3. Avoid using special characters that are not escaped properly, such as unescaped single quotes or backticks.
+  4. The content should be a string of text (with appropriate word count), and you should only use newline characters (\\n) where necessary.
+  5. The JSON object should be properly formatted and indented as shown in the example above.
+
+  Return the article as valid JSON.`;
+
     return promptText;
   }
 }

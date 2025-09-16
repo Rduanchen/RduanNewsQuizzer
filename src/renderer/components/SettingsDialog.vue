@@ -222,14 +222,14 @@ const syncInterval = 2000;
 onMounted(async () => {
   await loadAllOptions();
   await getCurrentQuestionSettings();
-  startAutoSync();
+  // startAutoSync();
 });
 
 watch(() => props.modelValue, (val) => {
   dialog.value = val;
   if (val) {
     getCurrentQuestionSettings();
-    startAutoSync();
+    // startAutoSync();
   } else {
     stopAutoSync();
   }
@@ -332,7 +332,7 @@ const applySettings = async () => {
     questionStyle: questionSettings.value.questionStyle,
     testStyle: questionSettings.value.testStyle
   };
-  result = await window.api.settings.updateQuestionSettings(sendQuestionSettings);
+  result = await window.api.settings.updateQuestionSettings(JSON.parse(JSON.stringify(sendQuestionSettings)));
   if (result.statusCode !== 200) {
     errorMsg.value = result.message;
     return;

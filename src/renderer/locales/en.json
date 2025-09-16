@@ -1,0 +1,36 @@
+{
+  "home": {
+    "onlineSource": "Online Source",
+    "selfUpload": "Self Upload",
+    "aiGenerate": "AI Generate",
+    "onlineSourceDesc": "Fetch news from an online source to generate a quiz.",
+    "selfUploadDesc": "Upload your own text file to generate a quiz.",
+    "aiGenerateDesc": "Generate a quiz from a topic using AI."
+  },
+  "onlineSource": {
+    "sourceSelectLabel": "Choose a news source",
+    "errorSources": "Error fetching sources",
+    "errorSelect": "Error selecting source",
+    "errorHeadlines": "Error fetching headlines",
+    "noHeadlines": "No headlines found for the selected source."
+  },
+  "newsCard": {
+    "readMore": "Read More"
+  },
+  "aiGenerate": {
+    "formTitle": "Generate Article with AI",
+    "levelLabel": "Difficulty Level (CEFR)",
+    "topicLabel": "Topic",
+    "wordCountLabel": "Word Count",
+    "generateButton": "Generate",
+    "regenerateButton": "Regenerate",
+    "errorPrefix": "Generation Failed",
+    "errorDefault": "An unknown error occurred."
+  },
+  "selfUpload": {
+    "formTitle": "Create Quiz from Your Text",
+    "titleLabel": "Title",
+    "contentLabel": "Content",
+    "submitButton": "Create Quiz"
+  }
+}

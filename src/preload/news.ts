@@ -1,5 +1,6 @@
 import { ipcRenderer } from 'electron';
 import { Reply } from '../main/error-handle/index';
+import { PromptFormat as GenerateArticleFormate } from '../main/news-sources/plugins/news-generator';
 
 const newsAPI = {
   // 獲取新聞來源列表
@@ -18,19 +19,19 @@ const newsAPI = {
   },
 
   // 根據來源與連結爬取新聞內容
-  getNewsContentBySource: async (sourceIndex: number, newsUrl: string): Promise<Reply> => {
-    return await ipcRenderer.invoke('news-sources:getNewsContentBySource', sourceIndex, newsUrl);
+  getNewsContent: async (newsUrl: string): Promise<Reply> => {
+    return await ipcRenderer.invoke('news-sources:getNewsContent', newsUrl);
   },
 
   // 自動生成文章內容
-  generateArticleContent: async (articleOptions: any): Promise<Reply> => {
+  generateArticleContent: async (articleOptions: GenerateArticleFormate): Promise<Reply> => {
     return await ipcRenderer.invoke('news-sources:generateArticleContent', articleOptions);
   },
 
   // 取得自訂文章內容（其實前端直接送也可以）
-  getCustomArticleContent: async (customArticle: string): Promise<Reply> => {
-    return await ipcRenderer.invoke('news-sources:getCustomArticleContent', customArticle);
-  },
+  // getCustomArticleContent: async (customArticle: string): Promise<Reply> => {
+  //   return await ipcRenderer.invoke('news-sources:getCustomArticleContent', customArticle);
+  // },
 
   // 打開外部連結
   openExternalUrl: async (url: string): Promise<void> => {
