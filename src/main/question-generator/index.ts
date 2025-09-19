@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron';
 import { QuestionSettingsManager } from './settings/questionSettings';
-import { GenerateSettings } from './settings/settingsModel';
+import { ExamStyle, GenerateSettings } from './settings/settingsModel';
 import { LMStudioSettings } from './settings/lmStudioSettings';
 import { LmStudioGenerator } from './lmStudioGenerator';
 import { LmStudioSettings } from './settings/lmStudioSettings';
@@ -8,6 +8,7 @@ import { OpenAISettingsManager, OpenAISettings } from './settings/openAISettings
 import { OpenAIService } from './openaiService';
 import { StatusCode, Reply } from '../error-handle/index';
 import { storeManager } from '../store/controller';
+import { buildPrompt, PromptOptions } from './promptLibrary';
 
 export const LLMSources = ['OpenAI', 'LMStudio'];
 interface LLMOption {
@@ -141,6 +142,29 @@ export default class QuestionsManager {
         error: new Error('No valid LLM source selected')
       } as Reply;
     });
+    ipcMain.handle('questions:generate-questions', async (_event, article: string) => {
+      let tryTimes = 0;
+      for (let i = 0; i < 3; i++) {
+        const prompt = this.buildQuestionPrompt(article);
+        const reply = await LmStudioGenerator.generateReply(prompt);
+        try {
+          reply.data = JSON.parse(reply.data as string);
+          if (Array.isArray(reply.data)) {
+            return reply;
+          } else {
+            tryTimes += 1;
+          }
+        } catch (e) {
+          tryTimes += 1;
+        }
+      }
+      return {
+        statusCode: StatusCode.InternalError,
+        message: `Failed to parse model response after ${tryTimes} attempts.`,
+        data: null,
+        error: new Error('Failed to parse model response.')
+      } as Reply;
+    });
   }
   public getCurrentLLMOption() {
     const settingString = storeManager.getLLMSettings();
@@ -163,5 +187,15 @@ export default class QuestionsManager {
       message: 'Successfully set current LLM option',
       data: option
     };
+  }
+  public buildQuestionPrompt(article: string): string {
+    // temporary test
+    const promptOptions: PromptOptions = {
+      article: article,
+      amount: 5,
+      style: ExamStyle.TOEIC,
+      questionStyles: ['selection']
+    };
+    return buildPrompt(promptOptions);
   }
 }
