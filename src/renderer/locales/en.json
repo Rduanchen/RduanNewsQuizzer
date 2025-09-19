@@ -38,7 +38,21 @@
     "by": "By",
     "noData": "No Article Data Provided",
     "noDataSubtitle": "Please select an article from the home page first.",
-    "goHome": "Go to Home"
+    "goHome": "Go to Home",
+    "generatingTitle": "Generating Quiz...",
+    "generatingSubtitle": "Please wait while we prepare your questions.",
+    "errorGenerating": "Failed to generate questions"
+  },
+  "quizTaker": {
+    "title": "Quiz",
+    "submitButton": "Submit Quiz",
+    "unanswered": "unanswered"
+  },
+  "questionCard": {
+    "correct": "Correct",
+    "incorrect": "Incorrect",
+    "correctAnswer": "Correct Answer",
+    "yourAnswer": "Your Answer"
   },
   "settingsPreview": {
     "title": "Generation Options",
