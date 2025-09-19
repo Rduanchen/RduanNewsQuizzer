@@ -65,7 +65,8 @@ const questionConfig = {
     prompt: `Create a multiple-choice question with one correct answer and several distractors, the return of "selection" question json format must be the following format: { question: "string", options: ["string"], answer: number }, the option could be random, but the answer must be the index of the selected option.`
   }
 };
-const supportedQuestionStyles = Object.keys(questionConfig);
+// const supportedQuestionStyles = Object.keys(questionConfig);
+const supportedQuestionStyles = ['selection'];
 
 const TestStyle = [
   {

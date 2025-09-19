@@ -22,7 +22,14 @@ function questionSchemaMaker(questionOptions: string, answer: string, questionSt
 }
 
 function generateQuestionSchemaByName(questionStyle: string): string {
-  if (!(questionStyle in supportedQuestionStyles)) {
+  let isExists = false;
+  for (const style of supportedQuestionStyles) {
+    if (style === questionStyle) {
+      isExists = true;
+      break;
+    }
+  }
+  if (!isExists) {
     throw new Error(`Unknown question style: ${questionStyle}`);
   }
   let questionPrompt = questionSchemaMaker(
@@ -39,7 +46,7 @@ const TEST_STYLE_PROMPT = {
   TOEFL: 'Pretend that you are the TOEFL test maker. Create the question like TOEFL style.'
 };
 
-interface PromptOptions {
+export interface PromptOptions {
   article: string;
   amount?: number;
   style?: ExamStyle;
@@ -48,46 +55,52 @@ interface PromptOptions {
 
 const base = `
     You are an AI assistant to generate multiple-choice questions from a given article.
-    - Your reply must be in JSON format ONLY.
-    - All questions and answers must be in English.
-    - The answer index must be random but within the range of available options and correspond to the correct answer.
+    You are an AI assistant to generate multiple-choice questions from a given article.
+
+    1. Output MUST be a **raw JSON array only**. Do NOT include any comments, explanations, or code blocks (like \`\`\`json).
+    2. Do NOT add any extra phrases such as "Here are the questions" or "\`\`\`json".
+    3. Output format must be exactly like this per question:
+    4. Return question objects inside a JSON array.
+    5. All questions and answers must be in English.
+    6. The answer index must be random (0\–3) and correspond to the correct answer.
 `;
 
 function buildPrompt(options: PromptOptions): string {
   const { article, style, questionStyles } = options;
   let prompt = base;
   // question amount
-  prompt += `\n      - Please generate exactly ${options.amount} questions.`;
-  prompt += `\n      - You can generate ${String(questionStyles)} questions.`;
+  prompt += `    - Please generate exactly ${options.amount} questions.`;
+  prompt += `     - You can generate ${String(questionStyles)} questions.`;
   //test style
   if (style) {
     switch (style) {
       case 'TOEIC':
-        prompt += `\n      ${TEST_STYLE_PROMPT.TOEIC}`;
+        prompt += `   ${TEST_STYLE_PROMPT.TOEIC}`;
         break;
       case 'IELTS':
-        prompt += `\n      ${TEST_STYLE_PROMPT.IELTS}`;
+        prompt += `    ${TEST_STYLE_PROMPT.IELTS}`;
         break;
       case 'TOEFL':
-        prompt += `\n      ${TEST_STYLE_PROMPT.TOEFL}`;
+        prompt += `    ${TEST_STYLE_PROMPT.TOEFL}`;
         break;
       default:
-        prompt += `\n      ${TEST_STYLE_PROMPT.TOEIC}`;
-        prompt += `\n      ${TEST_STYLE_PROMPT.IELTS}`;
-        prompt += `\n      ${TEST_STYLE_PROMPT.TOEFL}`;
+        prompt += `     ${TEST_STYLE_PROMPT.TOEIC}`;
+        prompt += `    ${TEST_STYLE_PROMPT.IELTS}`;
+        prompt += `     ${TEST_STYLE_PROMPT.TOEFL}`;
     }
   } else {
-    prompt += `\n      ${TEST_STYLE_PROMPT.TOEIC}`;
-    prompt += `\n      ${TEST_STYLE_PROMPT.IELTS}`;
-    prompt += `\n      ${TEST_STYLE_PROMPT.TOEFL}`;
+    prompt += `    ${TEST_STYLE_PROMPT.TOEIC}`;
+    prompt += `     ${TEST_STYLE_PROMPT.IELTS}`;
+    prompt += `    ${TEST_STYLE_PROMPT.TOEFL}`;
   }
-  prompt += `\n      - The format of the questions should be as the following JSON schema and description:`;
-
-  for (const qs of questionStyles) {
-    prompt += `\n      ${generateQuestionSchemaByName(qs)}`;
-    prompt += `\n      ${questionConfig[qs].prompt}`;
-  }
-  prompt += `\n Please make sure to strictly follow the guidelines above when generating questions. `;
+  prompt += `  - The format of the questions should be as the following JSON schema and description:`;
+  prompt += `{
+     "questionStyle": "selection",
+     "question": "string",
+     "options": ["string", "string", "string", "string"],
+     "answer": number
+   }`;
+  prompt += `Please make sure to strictly follow the guidelines above when generating questions. `;
   prompt += `Here is the Article: ${article}`;
   log(prompt);
   return prompt;
