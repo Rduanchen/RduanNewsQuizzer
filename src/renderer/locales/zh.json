@@ -1,6 +1,7 @@
 {
   "app": {
-    "newsList": "新聞列表"
+    "newsList": "新聞列表",
+    "toggleTheme": "切換主題"
   },
   "home": {
     "onlineSource": "線上來源",
@@ -83,5 +84,22 @@
     "incorrect": "錯誤",
     "timeUsed": "花費時間",
     "retake": "重新測驗"
+  },
+  "settingsDialog": {
+    "systemSettings": "系統設定",
+    "questionSettings": "題目設定",
+    "questionAmount": "題目數量",
+    "questionStyle": "題目風格",
+    "testStyle": "考試類型",
+    "llmSourceSelect": "AI 來源選擇",
+    "openaiSettings": "OpenAI 設定",
+    "apiKey": "API 金鑰",
+    "model": "模型",
+    "pricePerQuestion": "單題價格",
+    "reasoningEffort": "推理強度",
+    "lmstudioSettings": "LM Studio 設定",
+    "lmstudioModelName": "模型名稱",
+    "cancel": "取消",
+    "save": "儲存"
   }
 }

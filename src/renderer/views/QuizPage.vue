@@ -2,12 +2,12 @@
   <v-container fluid class="pa-4">
     <v-row v-if="quizData">
       <!-- Left side: Article -->
-      <v-col cols="12" md="7">
+      <v-col cols="12" md="7" class="left-panel">
         <ArticleDisplay :articleData="quizData" />
       </v-col>
 
       <!-- Right side: Content based on quiz state -->
-      <v-col cols="12" md="5">
+      <v-col cols="12" md="5" class="right-panel">
         <div style="position: sticky; top: 80px">
           <!-- State 1: Settings Preview -->
           <SettingsPreview v-if="quizState === 'preview'" @start-quiz="generateQuestions" />
@@ -112,3 +112,14 @@ onMounted(() => {
   }
 });
 </script>
+<style scoped>
+.left-panel {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.right-panel {
+  max-height: 90vh;
+  overflow-y: auto;
+}
+</style>

@@ -1,8 +1,8 @@
 <template>
   <v-card variant="outlined" :class="cardClass">
     <v-card-title class="d-flex align-center">
-      <v-chip :color="getQuestionStatusColor()" density="comfortable" size="small" class="mr-2">
-        Q {{ questionNumber }}
+      <v-chip :color="getQuestionStatusColor()" density="comfortable" size="small" class="mr-3">
+        Q{{ questionNumber }}
       </v-chip>
       <span class="question-title">{{ question.question }}</span>
     </v-card-title>

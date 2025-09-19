@@ -1,6 +1,7 @@
 {
   "app": {
-    "newsList": "News List"
+    "newsList": "News List",
+    "toggleTheme": "Toggle Theme"
   },
   "home": {
     "onlineSource": "Online Source",
@@ -83,5 +84,22 @@
     "incorrect": "Incorrect",
     "timeUsed": "Time Used",
     "retake": "Retake Test"
+  },
+  "settingsDialog": {
+    "systemSettings": "System Settings",
+    "questionSettings": "Question Settings",
+    "questionAmount": "Number of Questions",
+    "questionStyle": "Question Styles",
+    "testStyle": "Test Type",
+    "llmSourceSelect": "LLM Source Selection",
+    "openaiSettings": "OpenAI Settings",
+    "apiKey": "API Key",
+    "model": "Model",
+    "pricePerQuestion": "Price per question",
+    "reasoningEffort": "Reasoning Effort",
+    "lmstudioSettings": "LM Studio Settings",
+    "lmstudioModelName": "Model Name",
+    "cancel": "Cancel",
+    "save": "Save"
   }
 }

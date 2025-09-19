@@ -1,44 +1,44 @@
-import { ExamStyle, supportedQuestionStyles, questionConfig } from './../settings/settingsModel';
+import { ExamStyle } from './../settings/settingsModel';
 import { logInfo } from '../../error-handle';
 
 function log(message: string) {
   logInfo(`[promptLibrary] ${message}`);
 }
 
-function questionSchemaMaker(questionOptions: string, answer: string, questionStyle): string {
-  return `{
-  type: 'object',
-  properties: {
-    questionStyle: {
-      type: 'string',
-      enum: [${questionStyle}]
-    },
-    question: { type: 'string' },
-    options: ${questionOptions}
-    answer: ${answer}
-  },
-  required: ['question']
-};`;
-}
+// function questionSchemaMaker(questionOptions: string, answer: string, questionStyle): string {
+//   return `{
+//   type: 'object',
+//   properties: {
+//     questionStyle: {
+//       type: 'string',
+//       enum: [${questionStyle}]
+//     },
+//     question: { type: 'string' },
+//     options: ${questionOptions}
+//     answer: ${answer}
+//   },
+//   required: ['question']
+// };`;
+// }
 
-function generateQuestionSchemaByName(questionStyle: string): string {
-  let isExists = false;
-  for (const style of supportedQuestionStyles) {
-    if (style === questionStyle) {
-      isExists = true;
-      break;
-    }
-  }
-  if (!isExists) {
-    throw new Error(`Unknown question style: ${questionStyle}`);
-  }
-  let questionPrompt = questionSchemaMaker(
-    questionConfig[questionStyle].options,
-    questionConfig[questionStyle].answer,
-    questionStyle
-  );
-  return questionPrompt;
-}
+// function generateQuestionSchemaByName(questionStyle: string): string {
+//   let isExists = false;
+//   for (const style of supportedQuestionStyles) {
+//     if (style === questionStyle) {
+//       isExists = true;
+//       break;
+//     }
+//   }
+//   if (!isExists) {
+//     throw new Error(`Unknown question style: ${questionStyle}`);
+//   }
+//   let questionPrompt = questionSchemaMaker(
+//     questionConfig[questionStyle].options,
+//     questionConfig[questionStyle].answer,
+//     questionStyle
+//   );
+//   return questionPrompt;
+// }
 
 const TEST_STYLE_PROMPT = {
   TOEIC: 'Pretend that you are the TOEIC test maker. Create the question like TOEIC style.',

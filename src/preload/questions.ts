@@ -1,31 +1,31 @@
 import { ipcRenderer } from 'electron';
 
-interface ModelOption {
-  id: string;
-  name: string;
-  displayName: string;
-  category: 'GPT-5' | 'GPT-4.1';
-}
+// interface ModelOption {
+//   id: string;
+//   name: string;
+//   displayName: string;
+//   category: 'GPT-5' | 'GPT-4.1';
+// }
 
-interface ExamStyleOption {
-  title: string;
-  value: number;
-  description: string;
-}
+// interface ExamStyleOption {
+//   title: string;
+//   value: number;
+//   description: string;
+// }
 
-interface ReasoningOption {
-  title: string;
-  value: string;
-  description: string;
-}
+// interface ReasoningOption {
+//   title: string;
+//   value: string;
+//   description: string;
+// }
 
-interface GenerateQuestionsOptions {
-  article: string;
-  amount?: number;
-  style?: number;
-  model?: string;
-  reasoningEffort?: 'low' | 'medium' | 'high';
-}
+// interface GenerateQuestionsOptions {
+//   article: string;
+//   amount?: number;
+//   style?: number;
+//   model?: string;
+//   reasoningEffort?: 'low' | 'medium' | 'high';
+// }
 
 interface ApiResponse<T = any> {
   success: boolean;
