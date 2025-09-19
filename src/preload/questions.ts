@@ -40,8 +40,8 @@ const questionsAPI = {
   },
 
   // 生成問題
-  generate: async (options: GenerateQuestionsOptions): Promise<ApiResponse> => {
-    return await ipcRenderer.invoke('questions:generate', options);
+  generateQuestions: async (article: string): Promise<ApiResponse> => {
+    return await ipcRenderer.invoke('questions:generate-questions', article);
   }
 
   // 測試 OpenAI 連接
