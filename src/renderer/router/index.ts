@@ -50,17 +50,17 @@ const routes = [
     redirect: '/online-source',
     children: [
       {
-        path: '/online-source',
+        path: 'online-source',
         name: 'OnlineSource',
         component: OnlineSource
       },
       {
-        path: '/self-upload',
+        path: 'self-upload',
         name: 'SelfUpload',
         component: SelfUpload
       },
       {
-        path: '/ai-generate',
+        path: 'ai-generate',
         name: 'AIGenerate',
         component: AIGenerate
       }
