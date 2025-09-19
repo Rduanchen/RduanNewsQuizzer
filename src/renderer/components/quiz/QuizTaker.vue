@@ -12,7 +12,7 @@
     <v-divider></v-divider>
 
     <!-- Questions -->
-    <v-card-text style="max-height: 65vh; overflow-y: auto;">
+    <v-card-text style="max-height: 65vh; overflow-y: auto">
       <v-row dense>
         <v-col v-for="(question, index) in questions" :key="index" cols="12">
           <QuestionCard
@@ -37,14 +37,16 @@
         :disabled="unansweredQuestions > 0"
       >
         {{ $t('quizTaker.submitButton') }}
-        <span v-if="unansweredQuestions > 0" class="ml-2">({{ unansweredQuestions }} {{ $t('quizTaker.unanswered') }})</span>
+        <span v-if="unansweredQuestions > 0" class="ml-2"
+          >({{ unansweredQuestions }} {{ $t('quizTaker.unanswered') }})</span
+        >
       </v-btn>
     </v-card-actions>
   </v-card>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, defineEmits } from 'vue'; // Added defineEmits
 import { useI18n } from 'vue-i18n';
 import QuestionCard from './QuestionCard.vue';
 
@@ -54,10 +56,13 @@ const props = defineProps({
   questions: { type: Array, required: true }
 });
 
+// --- FIX: You must define emits to use the 'emit' function in <script setup> ---
+const emit = defineEmits(['quiz-submitted']);
+
 const userAnswers = ref([]);
 const timeElapsed = ref(0);
 let timerInterval = null;
-let questionTimers = {}; // To track time per question
+let questionTimers = {};
 
 // --- Timer Logic ---
 const startTimer = () => {
@@ -67,7 +72,9 @@ const startTimer = () => {
 };
 
 const formattedTime = computed(() => {
-  const minutes = Math.floor(timeElapsed.value / 60).toString().padStart(2, '0');
+  const minutes = Math.floor(timeElapsed.value / 60)
+    .toString()
+    .padStart(2, '0');
   const seconds = (timeElapsed.value % 60).toString().padStart(2, '0');
   return `${minutes}:${seconds}`;
 });
@@ -75,30 +82,28 @@ const formattedTime = computed(() => {
 // --- Answer Handling Logic ---
 const handleAnswer = (questionIndex, answerIndex) => {
   const endTime = new Date().getTime();
-  const startTime = questionTimers[questionIndex] || new Date().getTime(); // Fallback
-  const timeTaken = (endTime - startTime) / 1000; // in seconds
+  const startTime = questionTimers[questionIndex] || new Date().getTime();
+  const timeTaken = (endTime - startTime) / 1000;
 
   userAnswers.value[questionIndex] = {
     answer: answerIndex,
-    timeTaken: timeTaken,
+    timeTaken: timeTaken
   };
-  
-  // Set start time for the next question if it exists
+
   if (questionIndex + 1 < props.questions.length && !questionTimers[questionIndex + 1]) {
-      questionTimers[questionIndex + 1] = new Date().getTime();
+    questionTimers[questionIndex + 1] = new Date().getTime();
   }
 };
 
 const unansweredQuestions = computed(() => {
-    return props.questions.length - userAnswers.value.filter(a => a !== undefined).length;
+  return props.questions.length - userAnswers.value.filter((a) => a !== undefined).length;
 });
 
 // --- Lifecycle Hooks ---
 onMounted(() => {
   userAnswers.value = new Array(props.questions.length).fill(undefined);
-  // Set start time for the first question
   if (props.questions.length > 0) {
-      questionTimers[0] = new Date().getTime();
+    questionTimers[0] = new Date().getTime();
   }
   startTimer();
 });
@@ -110,10 +115,21 @@ onUnmounted(() => {
 // --- Submission ---
 const submitQuiz = () => {
   clearInterval(timerInterval);
-  console.log("Quiz Submitted!");
-  console.log("Total Time:", formattedTime.value);
-  console.log("Answers:", userAnswers.value);
-  alert('Quiz submitted! Check the console for the results. We will implement the results page next.');
+
+  // Finalize any unrecorded times
+  const lastAnsweredIndex = userAnswers.value.findLastIndex((a) => a !== undefined);
+  if (lastAnsweredIndex !== -1 && userAnswers.value[lastAnsweredIndex].timeTaken === 0) {
+    handleAnswer(lastAnsweredIndex, userAnswers.value[lastAnsweredIndex].answer);
+  }
+
+  // Prepare data for emission
+  const finalAnswers = userAnswers.value.map((a) => (a ? a.answer : undefined));
+  const finalTimeUsed = userAnswers.value.map((a) => (a ? parseFloat(a.timeTaken.toFixed(1)) : 0));
+
+  emit('quiz-submitted', {
+    userAnswers: finalAnswers,
+    timeUsed: finalTimeUsed
+  });
 };
 </script>
 

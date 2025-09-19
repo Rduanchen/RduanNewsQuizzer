@@ -1,6 +1,6 @@
 import { OpenAI } from 'openai';
-import { storeManager } from '../store/controller';
-import { Reply, StatusCode, logInfo, logError } from '../error-handle/index';
+import { storeManager } from '../../store/controller';
+import { Reply, StatusCode, logInfo, logError } from '../../error-handle/index';
 
 export interface MessagePayload {
   prompt: any;
@@ -108,13 +108,13 @@ export class OpenAIService {
     try {
       const params: any = {
         model: payload.model ?? DEFAULT_MODEL,
-        messages: [{ role: 'user', content: payload.prompt }]
+        input: [{ role: 'user', content: payload.prompt }]
       };
       if (payload.effort) {
         params.reasoning = { effort: payload.effort ?? DEFAULT_EFFORT };
       }
-      const response = await this.openai.chat.completions.create(params);
-      const replyText = response.choices?.[0]?.message?.content ?? '';
+      const response = await this.openai.responses.create(params);
+      const replyText = response.output_text;
       logInfo('OpenAI response generated successfully', 'OpenAIService');
       return {
         statusCode: StatusCode.OK,

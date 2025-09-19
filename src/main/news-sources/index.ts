@@ -1,6 +1,5 @@
 import { ipcMain, shell } from 'electron';
-import BBC from './plugins/bbc_clawer';
-import SelfDefine from './plugins/self-define';
+import BBC from './plugins/bbc_clawer/index';
 import SourcePlugins from './pluginsPrototype';
 import { PromptFormat, NewsGenerator } from './plugins/news-generator';
 import QuestionsManager from '../question-generator/index';
@@ -158,7 +157,7 @@ class NewsSourceManager {
   }
 
   public async getPlugins(): Promise<SourcePlugins[]> {
-    const pluginClasses = [BBC, SelfDefine];
+    const pluginClasses = [BBC];
     const instances = pluginClasses.map((PluginClass) => new PluginClass());
     instances.forEach((instance) => {
       instance.setup();

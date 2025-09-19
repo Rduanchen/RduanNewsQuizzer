@@ -22,11 +22,16 @@ class StoreManager {
 
   // API Key 管理
   public getApiKey(): string {
-    const apiKey = this.store.get('openai-api-key', '');
+    const openAISettings = this.store.get('openai-settings', {});
+    let apiKeyObj = JSON.parse(openAISettings || '{}');
+    const apiKey = apiKeyObj.apiKey || '';
     return apiKey as string;
   }
   public setApiKey(apiKey: string): void {
-    this.store.set('openai-api-key', apiKey);
+    const openAISettings = this.store.get('openai-settings', {});
+    let apiKeyObj = JSON.parse(openAISettings || '{}');
+    apiKeyObj.apiKey = apiKey;
+    this.store.set('openai-settings', JSON.stringify(apiKeyObj));
   }
 
   // API Endpoint 管理

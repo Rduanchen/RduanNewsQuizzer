@@ -1,5 +1,5 @@
-import { ExamStyle, supportedQuestionStyles, questionConfig } from './settings/settingsModel';
-import { logInfo } from '../error-handle';
+import { ExamStyle, supportedQuestionStyles, questionConfig } from './../settings/settingsModel';
+import { logInfo } from '../../error-handle';
 
 function log(message: string) {
   logInfo(`[promptLibrary] ${message}`);

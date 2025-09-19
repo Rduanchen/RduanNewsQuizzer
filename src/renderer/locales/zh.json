@@ -1,0 +1,87 @@
+{
+  "app": {
+    "newsList": "新聞列表"
+  },
+  "home": {
+    "onlineSource": "線上來源",
+    "selfUpload": "自行上傳",
+    "aiGenerate": "AI 生成"
+  },
+  "onlineSource": {
+    "sourceSelectLabel": "選擇新聞來源",
+    "errorSources": "獲取來源時發生錯誤",
+    "errorSelect": "選擇來源時發生錯誤",
+    "errorHeadlines": "獲取頭條新聞時發生錯誤",
+    "noHeadlines": "找不到所選來源的頭條新聞。",
+    "errorContent": "獲取文章內容時發生錯誤"
+  },
+  "newsCard": {
+    "readMore": "閱讀更多",
+    "select": "選擇"
+  },
+  "aiGenerate": {
+    "formTitle": "使用 AI 生成文章",
+    "levelLabel": "難易度 (CEFR)",
+    "topicLabel": "主題",
+    "wordCountLabel": "字數",
+    "generateButton": "生成",
+    "regenerateButton": "重新生成",
+    "errorPrefix": "生成失敗",
+    "errorDefault": "發生未知錯誤。",
+    "createQuizButton": "使用此文章建立測驗"
+  },
+  "selfUpload": {
+    "formTitle": "從您的文本建立測驗",
+    "titleLabel": "標題",
+    "contentLabel": "內容",
+    "submitButton": "建立測驗"
+  },
+  "quizPage": {
+    "title": "測驗頁面",
+    "by": "作者",
+    "noData": "未提供文章資料",
+    "noDataSubtitle": "請先從主頁選擇一篇文章。",
+    "goHome": "返回主頁",
+    "generatingTitle": "正在生成測驗...",
+    "generatingSubtitle": "請稍候，我們正在為您準備問題。",
+    "errorGenerating": "生成問題失敗"
+  },
+  "quizTaker": {
+    "title": "測驗",
+    "submitButton": "提交測驗",
+    "unanswered": "未作答"
+  },
+  "questionCard": {
+    "correct": "正確",
+    "incorrect": "錯誤",
+    "correctAnswer": "正確答案",
+    "yourAnswer": "您的答案"
+  },
+  "settingsPreview": {
+    "title": "生成選項",
+    "questionSettings": "問題設定",
+    "questionAmount": "問題數量",
+    "testStyle": "測驗類型",
+    "questionStyle": "問題樣式",
+    "aiSettings": "AI 設定",
+    "aiSource": "AI 來源",
+    "model": "模型",
+    "reasoningEffort": "推理強度",
+    "startButton": "開始測驗",
+    "errorLoading": "載入設定預覽失敗。",
+    "serviceNotReady": "生成服務尚未就緒，請檢查您的設定。",
+    "notSet": "未設定"
+  },
+  "articleDisplay": {
+    "title": "文章內容",
+    "noContent": "沒有可用的文章內容。"
+  },
+  "resultView": {
+    "yourGrade": "您的成績",
+    "accuracy": "準確率",
+    "correct": "正確",
+    "incorrect": "錯誤",
+    "timeUsed": "花費時間",
+    "retake": "重新測驗"
+  }
+}

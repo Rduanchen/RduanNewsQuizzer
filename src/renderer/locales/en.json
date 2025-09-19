@@ -1,4 +1,7 @@
 {
+  "app": {
+    "newsList": "News List"
+  },
   "home": {
     "onlineSource": "Online Source",
     "selfUpload": "Self Upload",
@@ -72,5 +75,13 @@
   "articleDisplay": {
     "title": "Article Content",
     "noContent": "Article content is not available."
+  },
+  "resultView": {
+    "yourGrade": "Your Grade",
+    "accuracy": "Accuracy",
+    "correct": "Correct",
+    "incorrect": "Incorrect",
+    "timeUsed": "Time Used",
+    "retake": "Retake Test"
   }
 }

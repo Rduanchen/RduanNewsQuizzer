@@ -5,10 +5,10 @@
       <v-col cols="12" md="7">
         <ArticleDisplay :articleData="quizData" />
       </v-col>
-      
+
       <!-- Right side: Content based on quiz state -->
       <v-col cols="12" md="5">
-        <div style="position: sticky; top: 80px;">
+        <div style="position: sticky; top: 80px">
           <!-- State 1: Settings Preview -->
           <SettingsPreview v-if="quizState === 'preview'" @start-quiz="generateQuestions" />
 
@@ -20,66 +20,94 @@
           </v-card>
 
           <!-- State 3: Taking the Quiz -->
-          <QuizTaker v-if="quizState === 'taking' && questions.length > 0" :questions="questions" />
+          <QuizTaker
+            v-if="quizState === 'taking' && questions.length > 0"
+            :questions="questions"
+            @quiz-submitted="handleQuizSubmitted"
+          />
+
+          <!-- State 4: Result View -->
+          <ResultView
+            v-if="quizState === 'result'"
+            :questions="questions"
+            :user-answers="resultData.userAnswers"
+            :time-used="resultData.timeUsed"
+            @retake="retakeQuiz"
+          />
         </div>
       </v-col>
     </v-row>
 
     <!-- Fallback if no data is provided -->
     <v-row v-else justify="center">
-      <!-- ... existing fallback content ... -->
+      <v-col cols="auto" class="text-center">
+        <h1 class="text-h4">{{ $t('quizPage.noData') }}</h1>
+        <p>{{ $t('quizPage.noDataSubtitle') }}</p>
+        <v-btn color="primary" to="/" class="mt-4">{{ $t('quizPage.goHome') }}</v-btn>
+      </v-col>
     </v-row>
   </v-container>
 </template>
+
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import ArticleDisplay from '../components/quiz/ArticleDisplay.vue';
 import SettingsPreview from '../components/quiz/SettingsPreview.vue';
 import QuizTaker from '../components/quiz/QuizTaker.vue';
+import ResultView from '../components/quiz/ResultView.vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 const route = useRoute();
 const quizData = ref(null);
 
-const quizState = ref('preview'); // 'preview', 'generating', 'taking'
+const quizState = ref('preview'); // 'preview', 'generating', 'taking', 'result'
 const questions = ref([]);
 const error = ref('');
 
+const resultData = ref({
+  userAnswers: [],
+  timeUsed: []
+});
+
 const generateQuestions = async () => {
-    if (!quizData.value?.article) return;
-    
-    quizState.value = 'generating';
-    error.value = '';
-    
-    try {
-        // --- FIX START ---
-        // 1. Changed window.api.question to window.api.questions (plural)
-        // 2. Wrapped the article content in an object as the API expects
-        const reply = await window.api.questions.generateQuestions(JSON.stringify(quizData.value.article));
-        // --- FIX END ---
-        //&& Array.isArray(reply.data)
-        if (reply.statusCode === 200) {
-            questions.value = reply.data;
-            quizState.value = 'taking';
-        } else {
-            throw new Error(reply.message || t('quizPage.errorGenerating'));
-        }
-    } catch (err) {
-        error.value = err.message;
-        quizState.value = 'preview'; // Revert to preview on error
-        alert(t('quizPage.errorGenerating') + ': ' + err.message);
+  if (!quizData.value?.article) return;
+  quizState.value = 'generating';
+  error.value = '';
+  try {
+    const reply = await window.api.questions.generateQuestions(
+      JSON.stringify(quizData.value.article)
+    );
+    if (reply.statusCode === 200 && Array.isArray(reply.data)) {
+      questions.value = reply.data;
+      quizState.value = 'taking';
+    } else {
+      throw new Error(reply.message || t('quizPage.errorGenerating'));
     }
+  } catch (err) {
+    error.value = err.message;
+    quizState.value = 'preview';
+    alert(t('quizPage.errorGenerating') + ': ' + err.message);
+  }
+};
+
+const handleQuizSubmitted = (payload) => {
+  resultData.value = payload;
+  quizState.value = 'result';
+};
+
+const retakeQuiz = () => {
+  resultData.value = { userAnswers: [], timeUsed: [] };
+  quizState.value = 'taking';
 };
 
 onMounted(() => {
   if (route.params.quizData) {
     try {
       quizData.value = JSON.parse(route.params.quizData);
-      
     } catch (e) {
-      console.error("Failed to parse quiz data:", e);
+      console.error('Failed to parse quiz data:', e);
     }
   }
 });

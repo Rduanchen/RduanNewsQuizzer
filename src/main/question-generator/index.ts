@@ -2,13 +2,15 @@ import { ipcMain } from 'electron';
 import { QuestionSettingsManager } from './settings/questionSettings';
 import { ExamStyle, GenerateSettings } from './settings/settingsModel';
 import { LMStudioSettings } from './settings/lmStudioSettings';
-import { LmStudioGenerator } from './lmStudioGenerator';
+import { LmStudioGenerator } from './generator/LMStudio';
 import { LmStudioSettings } from './settings/lmStudioSettings';
 import { OpenAISettingsManager, OpenAISettings } from './settings/openAISettings';
-import { OpenAIService } from './openaiService';
+import { OpenAIService, MessagePayload } from './generator/OpenAI';
 import { StatusCode, Reply } from '../error-handle/index';
 import { storeManager } from '../store/controller';
-import { buildPrompt, PromptOptions } from './promptLibrary';
+import { buildPrompt, PromptOptions } from './generator/promptLibrary';
+
+const MAX_TRY_TIMES = 2;
 
 export const LLMSources = ['OpenAI', 'LMStudio'];
 interface LLMOption {
@@ -143,26 +145,71 @@ export default class QuestionsManager {
       } as Reply;
     });
     ipcMain.handle('questions:generate-questions', async (_event, article: string) => {
-      let tryTimes = 0;
-      for (let i = 0; i < 3; i++) {
-        const prompt = this.buildQuestionPrompt(article);
-        const reply = await LmStudioGenerator.generateReply(prompt);
-        try {
-          reply.data = JSON.parse(reply.data as string);
-          if (Array.isArray(reply.data)) {
-            return reply;
-          } else {
+      const llmOptionReply = this.getCurrentLLMOption();
+      if (llmOptionReply.statusCode !== StatusCode.OK) {
+        return {
+          statusCode: llmOptionReply.statusCode,
+          message: llmOptionReply.message,
+          data: false
+        } as Reply;
+      }
+      const llmOption = llmOptionReply.data as LLMOption;
+      if (llmOption.source === 'LMStudio') {
+        let tryTimes = 0;
+        for (let i = 0; i < MAX_TRY_TIMES; i++) {
+          const prompt = this.buildQuestionPrompt(article);
+          console.log('Prompt to LMStudio:', prompt);
+          const reply = await LmStudioGenerator.generateReply(prompt);
+          try {
+            reply.data = JSON.parse(reply.data as string);
+            if (Array.isArray(reply.data)) {
+              return reply;
+            } else {
+              tryTimes += 1;
+            }
+          } catch (e) {
             tryTimes += 1;
           }
-        } catch (e) {
-          tryTimes += 1;
         }
+        return {
+          statusCode: StatusCode.InternalError,
+          message: `Failed to parse model response after ${tryTimes} attempts.`,
+          data: null,
+          error: new Error('Failed to parse model response.')
+        } as Reply;
+      } else if (llmOption.source === 'OpenAI') {
+        let tryTimes = 0;
+        for (let i = 0; i < MAX_TRY_TIMES; i++) {
+          const payload = this.buildOpenAIPrompt(article);
+          console.log('Payload to OpenAI:', payload);
+          const reply = await this.openAI.generateContext(payload);
+          try {
+            reply.data = JSON.parse(reply.data as string);
+            if (Array.isArray(reply.data)) {
+              return {
+                statusCode: StatusCode.OK,
+                message: 'Questions generated successfully',
+                data: reply.data
+              };
+            } else {
+              tryTimes += 1;
+            }
+          } catch (e) {
+            tryTimes += 1;
+          }
+        }
+        return {
+          statusCode: StatusCode.InternalError,
+          message: `Failed to parse model response after ${tryTimes} attempts.`,
+          data: null,
+          error: new Error('Failed to parse model response.')
+        } as Reply;
       }
       return {
-        statusCode: StatusCode.InternalError,
-        message: `Failed to parse model response after ${tryTimes} attempts.`,
-        data: null,
-        error: new Error('Failed to parse model response.')
+        statusCode: StatusCode.InvalidModelSetting,
+        message: 'No valid LLM source selected',
+        data: false,
+        error: new Error('No valid LLM source selected')
       } as Reply;
     });
   }
@@ -189,13 +236,22 @@ export default class QuestionsManager {
     };
   }
   public buildQuestionPrompt(article: string): string {
-    // temporary test
+    const settings = QuestionSettingsManager.getCurrentQuestionSettings().data as GenerateSettings;
     const promptOptions: PromptOptions = {
       article: article,
-      amount: 5,
-      style: ExamStyle.TOEIC,
-      questionStyles: ['selection']
+      amount: settings.questionAmount,
+      style: settings.testStyle as ExamStyle,
+      questionStyles: settings.questionStyle
     };
     return buildPrompt(promptOptions);
+  }
+  public buildOpenAIPrompt(article: string): MessagePayload {
+    let settings = OpenAISettingsManager.getCurrentOpenAISettings().data as OpenAISettings;
+    const promptPayload = {
+      prompt: this.buildQuestionPrompt(article),
+      model: settings.model,
+      effort: settings.reasoningEffort
+    } as MessagePayload;
+    return promptPayload;
   }
 }

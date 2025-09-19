@@ -1,7 +1,7 @@
 import { LMStudioClient } from '@lmstudio/sdk';
-import { storeManager } from '../store/controller';
-import type { LMStudioSettings } from './settings/lmStudioSettings';
-import { Reply, StatusCode, logInfo, logError } from '../error-handle/index';
+import { storeManager } from '../../store/controller';
+import type { LMStudioSettings } from '../settings/lmStudioSettings';
+import { Reply, StatusCode, logInfo, logError } from '../../error-handle/index';
 
 export class LmStudioGenerator {
   private static client: LMStudioClient | null = null;

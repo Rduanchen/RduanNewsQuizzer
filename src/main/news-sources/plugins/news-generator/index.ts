@@ -1,5 +1,5 @@
-import { OpenAIService, type MessagePayload } from '../../../question-generator/openaiService';
-import { LmStudioGenerator } from '../../../question-generator/lmStudioGenerator';
+import { OpenAIService, type MessagePayload } from '../../../question-generator/generator/OpenAI';
+import { LmStudioGenerator } from '../../../question-generator/generator/LMStudio';
 import { Reply, StatusCode } from '../../../error-handle';
 
 export interface PromptFormat {
