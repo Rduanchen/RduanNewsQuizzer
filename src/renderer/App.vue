@@ -14,7 +14,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import SettingsDialog from './components/SettingsDialog.vue';
-import QuestionGeneratorDialog from './components/QuestionGeneratorDialog.vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
