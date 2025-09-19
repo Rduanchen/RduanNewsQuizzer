@@ -114,6 +114,8 @@ export class NewsGenerator {
   3. Avoid using special characters that are not escaped properly, such as unescaped single quotes or backticks.
   4. The content should be a string of text (with appropriate word count), and you should only use newline characters (\\n) where necessary.
   5. The JSON object should be properly formatted and indented as shown in the example above.
+  6. Do not add \n any extra explanations, comments, or text outside the JSON structure.
+  7. Plese reply the JSON object only in one line without any line breaks.
 
   Return the article as valid JSON.`;
 
