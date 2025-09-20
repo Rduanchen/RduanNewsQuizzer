@@ -1,9 +1,11 @@
-# Rduan AI NewsQuizzer
+# Rduan NewsQuizzer (AI based Language Quiz Generator)
+
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/Rduanchen/RduanNewsQuizzer)]
 
 ![Build & Release](https://github.com/Rduanchen/RduanNewsQuizzer/actions/workflows/release.yml/badge.svg)
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-**Rduan AI NewsQuizzer** is a desktop application designed for language learners. It leverages the power of AI to transform real-time news articles, AI-generated text, or your own content into personalized language quizzes. The goal is to make language learning more engaging, contextual, and relevant to daily life.
+**Rduan NewsQuizzer** is a desktop application designed for language learners. It leverages the power of AI to transform real-time news articles, AI-generated text, or your own content into personalized language quizzes. The goal is to make language learning more engaging, contextual, and relevant to daily life.
 
 ---
 
