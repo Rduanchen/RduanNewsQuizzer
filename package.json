@@ -1,6 +1,6 @@
 {
   "name": "news-quizzer",
-  "version": "1.0.0",
+  "version": "1.5.2",
   "description": "An application use generate reading comprehension questions",
   "main": "./out/main/index.js",
   "author": "Justin",
@@ -32,8 +32,9 @@
     "axios": "^1.7.9",
     "bbc-scraper": "^1.1.1",
     "cheerio": "^1.1.2",
+    "electron-log": "^5.4.3",
     "electron-store": "^10.1.0",
-    "electron-updater": "^6.1.7",
+    "electron-updater": "^6.6.2",
     "lodash": "^4.17.21",
     "mitt": "^3.0.1",
     "openai": "^5.12.2",

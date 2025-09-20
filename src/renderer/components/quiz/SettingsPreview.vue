@@ -137,10 +137,4 @@ onMounted(async () => {
   await fetchAllSettings();
   await checkServiceStatus();
 });
-
-const handleStart = () => {
-  // Logic for starting the quiz generation will go here
-  console.log('Start button clicked. Service is ready.');
-  alert('Quiz generation started!');
-};
 </script>

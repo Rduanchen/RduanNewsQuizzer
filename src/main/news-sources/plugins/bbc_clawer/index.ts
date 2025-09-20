@@ -10,7 +10,6 @@ export default class BBCSource extends SourcePlugins {
     return getBBCNewsContent(url);
   }
   async getNewsTitles(keyword?: string): Promise<any> {
-    console.log('Configuring BBC scraper with medium image resolution');
     configBBC({
       imageResolution: 'medium'
     });

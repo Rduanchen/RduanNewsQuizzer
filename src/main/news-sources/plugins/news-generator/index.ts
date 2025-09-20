@@ -1,6 +1,11 @@
 import { OpenAIService, type MessagePayload } from '../../../question-generator/generator/OpenAI';
 import { LmStudioGenerator } from '../../../question-generator/generator/LMStudio';
 import { Reply, StatusCode } from '../../../error-handle';
+import { logInfo } from '../../../error-handle';
+
+function log(message: string) {
+  logInfo('NewsGenerator', message);
+}
 
 export interface PromptFormat {
   level: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
@@ -45,7 +50,7 @@ export class NewsGenerator {
     if ((await LmStudioGenerator.isServiceAvailable()).data) {
       const llmReply = await LmStudioGenerator.generateReply(this.buildPrompt(this.prompt));
       // convert the string to JSON
-      console.log(llmReply);
+      log('LM Studio reply: ' + llmReply.data);
       const jsonData = JSON.parse(llmReply.data);
       return {
         statusCode: llmReply.statusCode,

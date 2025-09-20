@@ -27,7 +27,6 @@ if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI);
     contextBridge.exposeInMainWorld('api', api);
-    console.log('API exposed:', api);
   } catch (error) {
     console.error('Failed to expose APIs to main world:', error);
   }

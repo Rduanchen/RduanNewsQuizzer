@@ -6,9 +6,13 @@ import { LmStudioGenerator } from './generator/LMStudio';
 import { LmStudioSettings } from './settings/lmStudioSettings';
 import { OpenAISettingsManager, OpenAISettings } from './settings/openAISettings';
 import { OpenAIService, MessagePayload } from './generator/OpenAI';
-import { StatusCode, Reply } from '../error-handle/index';
+import { StatusCode, Reply, logInfo } from '../error-handle/index';
 import { storeManager } from '../store/controller';
 import { buildPrompt, PromptOptions } from './generator/promptLibrary';
+
+function log(message: string) {
+  logInfo('QuestionsManager', message);
+}
 
 const MAX_TRY_TIMES = 2;
 
@@ -158,7 +162,7 @@ export default class QuestionsManager {
         let tryTimes = 0;
         for (let i = 0; i < MAX_TRY_TIMES; i++) {
           const prompt = this.buildQuestionPrompt(article);
-          console.log('Prompt to LMStudio:', prompt);
+
           const reply = await LmStudioGenerator.generateReply(prompt);
           try {
             reply.data = JSON.parse(reply.data as string);
@@ -181,7 +185,7 @@ export default class QuestionsManager {
         let tryTimes = 0;
         for (let i = 0; i < MAX_TRY_TIMES; i++) {
           const payload = this.buildOpenAIPrompt(article);
-          console.log('Payload to OpenAI:', payload);
+          log('Payload to OpenAI:' + JSON.stringify(payload));
           const reply = await this.openAI.generateContext(payload);
           try {
             reply.data = JSON.parse(reply.data as string);
