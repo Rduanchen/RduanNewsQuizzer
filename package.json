@@ -1,6 +1,6 @@
 {
   "name": "news-quizzer",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "An application use generate reading comprehension questions",
   "main": "./out/main/index.js",
   "author": "Justin",
