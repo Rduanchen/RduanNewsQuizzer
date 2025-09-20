@@ -25,7 +25,8 @@ jobs:
             dist/*.dmg
             dist/*.zip
             dist/*.pkg
-            dist/latest-mac.yml  # 明确指定 yml 文件
+            dist/*.json
+            dist/*.yml
 
   build-win:
     runs-on: windows-latest
@@ -46,12 +47,14 @@ jobs:
           path: |
             dist/*.exe
             dist/*.msi
-            dist/latest.yml      # 明确指定 yml 文件
+            dist/*.json
+            dist/*.yml
 
   release:
     needs: [build-mac, build-win]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Download mac artifact
         uses: actions/download-artifact@v4
         with:
@@ -62,18 +65,25 @@ jobs:
         with:
           name: windows-build
           path: release-artifacts/win
-
-      - name: Create Release and Upload Assets
+      - name: Create Release
+        id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          # 修正 1: 直接使用 github.ref_name，它就是觸發的標籤 (e.g., "v1.0.0")
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
+          tag_name: v${{ github.ref_name }}
+          name: Release v${{ github.ref_name }}
           draft: false
           prerelease: false
-          # 修正 2: 將所有檔案的路徑一次性提供給 files 參數
-          files: |
-            release-artifacts/mac/*
-            release-artifacts/win/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Release Assets (mac)
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-artifacts/mac/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload Release Assets (win)
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release-artifacts/win/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
