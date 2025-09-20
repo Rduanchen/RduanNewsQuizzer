@@ -3,88 +3,35 @@ on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch:
-
+  workflow_dispatch: # 1. 新增手動觸發功能
 jobs:
-  build-mac:
-    runs-on: macos-latest
+  release: # 1. 將所有步驟合併到一個 release 工作中
+    runs-on: ${{ matrix.os }} # 2. 使用 matrix 策略來跨平台
+
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest] # 為 macOS 和 Windows 建立矩陣
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
       - name: Install dependencies
         run: npm install
-      - name: Build & Package (macOS)
-        run: npm run build:mac
-      - name: Upload mac artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: mac-build
-          path: |
-            dist/*.dmg
-            dist/*.zip
-            dist/*.pkg
-            dist/*.json
-            dist/*.yml
 
-  build-win:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-      - name: Install dependencies
-        run: npm install
-      - name: Build & Package (Windows)
-        run: npm run build:win
-      - name: Upload win artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-build
-          path: |
-            dist/*.exe
-            dist/*.msi
-            dist/*.json
-            dist/*.yml
-
-  release:
-    needs: [build-mac, build-win]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Download mac artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: mac-build
-          path: release-artifacts/mac
-      - name: Download win artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: windows-build
-          path: release-artifacts/win
-      - name: Create Release
-        id: create_release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ github.ref_name }}
-          name: Release v${{ github.ref_name }}
-          draft: false
-          prerelease: false
+      - name: Build and release
+        # 3. 根據作業系統執行對應的 build 指令
+        run: |
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            npm run build:win
+          elif [ "${{ matrix.os }}" == "macos-latest" ]; then
+            npm run build:mac
+          fi
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload Release Assets (mac)
-        uses: softprops/action-gh-release@v2
-        with:
-          files: release-artifacts/mac/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload Release Assets (win)
-        uses: softprops/action-gh-release@v2
-        with:
-          files: release-artifacts/win/*
-        env:
+          # 4. 這是最關鍵的修正：提供 Token 給 electron-builder
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
