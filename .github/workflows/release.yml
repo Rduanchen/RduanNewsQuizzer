@@ -34,4 +34,4 @@ jobs:
           fi
         env:
           # 4. 這是最關鍵的修正：提供 Token 給 electron-builder
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
